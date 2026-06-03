@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pet Personality Profile"
+  short_description: "Tune pet behavior from descriptions."
+  default_prompt: "Create or tune a Pocket Pixel pet profile from this detailed description."

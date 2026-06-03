@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arduboy Deploy"
+  short_description: "Compile and deploy Arduboy and Arduboy FX projects safely."
+  default_prompt: "Compile or upload this Arduboy project using the appropriate classic or FX workflow."

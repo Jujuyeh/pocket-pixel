@@ -1,0 +1,117 @@
+---
+name: CI and Release
+
+"on":
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  ARDUINO_CLI_VERSION: "1.5.0"
+
+jobs:
+  build:
+    name: Build Arduboy artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+
+      - name: Install Arduino CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.local/bin"
+          base_url="https://github.com/arduino/arduino-cli/releases/download"
+          archive="arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz"
+          curl -fsSL "${base_url}/v${ARDUINO_CLI_VERSION}/${archive}" \
+            -o arduino-cli.tar.gz
+          tar -xzf arduino-cli.tar.gz arduino-cli
+          install -m 0755 arduino-cli "$HOME/.local/bin/arduino-cli"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Check flake
+        run: nix flake check
+
+      - name: Install Arduino dependencies
+        run: make setup
+
+      - name: Regenerate active profile
+        run: make profile-header
+
+      - name: Compile stable build
+        run: make compile
+
+      - name: Compile debug build
+        run: make compile-debug
+
+      - name: Prepare FX catalog entry
+        run: make fx-entry
+
+      - name: Package release artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME//\//-}"
+          mkdir -p dist/release
+          cp build/stable/pocket-pixel.ino.hex \
+            "dist/release/pocket-pixel-${version}.hex"
+          cp build/debug/pocket-pixel.ino.hex \
+            "dist/release/pocket-pixel-debug-${version}.hex"
+          tar -C dist -czf \
+            "dist/release/pocket-pixel-fx-entry-${version}.tar.gz" \
+            fx-cart
+          {
+            echo "Pocket Pixel ${version}"
+            echo
+            echo "Code license: GPL-3.0-or-later"
+            echo "Asset/docs/profile license: CC-BY-SA-4.0"
+            echo
+            echo "Stable HEX: pocket-pixel-${version}.hex"
+            echo "Debug HEX: pocket-pixel-debug-${version}.hex"
+            echo "FX catalog entry: pocket-pixel-fx-entry-${version}.tar.gz"
+          } > "dist/release/README-${version}.txt"
+          (cd dist/release && sha256sum ./* > "SHA256SUMS-${version}.txt")
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: pocket-pixel-build
+          path: dist/release/*
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: pocket-pixel-build
+          path: dist/release
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: dist/release/*
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

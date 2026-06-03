@@ -1,0 +1,4 @@
+version: 1
+name: sprite-workflow
+description: Pocket Pixel Arduboy sprite inspection, editing, slicing, and conversion workflow.
+entrypoint: SKILL.md

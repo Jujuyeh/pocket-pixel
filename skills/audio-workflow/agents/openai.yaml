@@ -1,0 +1,4 @@
+version: 1
+name: audio-workflow
+description: Pocket Pixel ArduboyTones inspection, design, conversion, and integration workflow.
+entrypoint: SKILL.md

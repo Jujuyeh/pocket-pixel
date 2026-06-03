@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "name": "Pixel",
+  "species": "cat",
+  "description": "Pixel is a sleepy cat with frequent bathroom habits. The current recovered game behavior is based on him: he often sleeps, often needs cleanup, and mostly lets the player interact when he has decided he wants something.",
+  "evidence": [
+    "The recovered game already makes the cat sleepy because Pixel is sleepy.",
+    "The recovered game already makes the cat go to the bathroom frequently because Pixel does.",
+    "The intended cat model is interaction on the cat's terms, not always-available player commands."
+  ],
+  "traits": {
+    "sleepiness": 85,
+    "appetite": 50,
+    "bathroomFrequency": 80,
+    "playfulness": 30,
+    "affection": 55,
+    "independence": 75,
+    "anxiety": 15,
+    "curiosity": 60,
+    "routineSensitivity": 70
+  },
+  "behavior": {
+    "chanceSleeping": 30,
+    "chanceHungry": 90,
+    "chanceDirty": 120,
+    "chanceBored": 180,
+    "chanceAnxious": 255,
+    "chanceScratching": 255,
+    "feedCost": 20,
+    "fishPreference": 50,
+    "chickenPreference": 50
+  },
+  "assets": {
+    "banner": "assets/fx/banner.png"
+  },
+  "audio": {
+    "menuMelody": [
+      "E5",
+      "E5",
+      "F5",
+      "G5",
+      "G5",
+      "F5",
+      "E5",
+      "D5",
+      "C5",
+      "C5",
+      "D5",
+      "E5",
+      "E5",
+      "D5",
+      "D5",
+      "E5",
+      "E5",
+      "F5",
+      "G5",
+      "G5",
+      "F5",
+      "E5",
+      "D5",
+      "C5",
+      "C5",
+      "D5",
+      "E5",
+      "D5",
+      "C5",
+      "C5"
+    ]
+  },
+  "notes": "This profile preserves Pixel's sleepy and frequent-bathroom baseline while making boredom, anxiety, and wall scratching more occasional. The menu melody keeps the current Ode to Joy navigation sound for Pixel."
+}

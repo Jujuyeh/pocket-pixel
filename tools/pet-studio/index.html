@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pocket Pixel Pet Studio</title>
+  <link rel="stylesheet" href="styles.css?v=pet-studio-4">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <h1>Pet Studio</h1>
+        <p>Profile-aware sprite and audio editor for Pocket Pixel.</p>
+      </div>
+      <div class="status" id="status">Ready</div>
+    </header>
+
+    <section class="profilebar">
+      <div class="profile-controls">
+        <label>
+          Profile
+          <select id="profileSelect">
+            <option value="">Loading profiles</option>
+          </select>
+        </label>
+        <input id="newProfileName" type="text" placeholder="New profile name">
+        <button id="createProfile">Create profile</button>
+      </div>
+      <div class="mode-tabs">
+        <button data-mode="preferences">Preferences</button>
+        <button data-mode="sprite" class="active">Sprites</button>
+        <button data-mode="audio">Audio</button>
+      </div>
+    </section>
+
+    <section id="preferencesWorkspace" class="preferences-workspace hidden">
+      <aside class="panel">
+        <h2>Profile</h2>
+        <div class="stats" id="profileSummary"></div>
+        <h2>FX Banner</h2>
+        <div class="banner-card">
+          <img id="bannerPreview" alt="FX banner preview">
+          <div class="stats" id="bannerPath"></div>
+          <label class="file-picker">
+            PNG banner
+            <input id="bannerInput" type="file" accept="image/png">
+          </label>
+          <button id="saveBanner">Save banner</button>
+        </div>
+      </aside>
+      <section class="editor profile-editor">
+        <div class="toolbar">
+          <button id="saveProfile">Save profile</button>
+          <div class="mode-tabs compact">
+            <button data-preferences-view="form" class="active">Form</button>
+            <button data-preferences-view="raw">Raw</button>
+          </div>
+        </div>
+        <div id="profileForm" class="profile-form"></div>
+        <label id="profileRaw" class="profile-raw hidden">
+          Profile JSON
+          <textarea id="profileJson" spellcheck="false"></textarea>
+        </label>
+      </section>
+    </section>
+
+    <section id="spriteWorkspace" class="workspace">
+      <aside class="panel">
+        <h2>Import</h2>
+        <label>
+          Project sprites
+          <select id="projectAssets">
+            <option value="">Run make pet-studio to load assets</option>
+          </select>
+        </label>
+        <label>
+          Name
+          <input id="spriteName" type="text" value="sprite">
+        </label>
+        <div class="row">
+          <label>
+            Width
+            <input id="spriteWidth" type="number" min="1" max="128" value="16">
+          </label>
+          <label>
+            Height
+            <input id="spriteHeight" type="number" min="1" max="64" value="16">
+          </label>
+        </div>
+        <div class="button-grid">
+          <button id="newSprite">New</button>
+          <button id="resizeSprite">Resize</button>
+        </div>
+        <label>
+          C array or ASCII grid
+          <textarea id="sourceInput" spellcheck="false" placeholder="Paste const uint8_t PROGMEM sprite[] = { ... } or a #/. ASCII grid"></textarea>
+        </label>
+        <div class="button-grid">
+          <button id="importC">Import C</button>
+          <button id="importAscii">Import ASCII</button>
+        </div>
+        <label class="file-picker">
+          PNG import
+          <input id="pngInput" type="file" accept="image/png,image/*">
+        </label>
+        <h2>Profile Banner</h2>
+        <div class="button-grid">
+          <button id="loadBannerSprite">Load banner</button>
+          <button id="saveBannerSprite">Save banner</button>
+        </div>
+      </aside>
+
+      <section class="editor">
+        <div class="toolbar">
+          <button data-tool="draw" class="active">Draw</button>
+          <button data-tool="erase">Erase</button>
+          <button data-tool="toggle">Toggle</button>
+          <button data-tool="line">Line</button>
+          <label>
+            Brush
+            <input id="brushSize" type="range" min="1" max="7" step="1" value="1">
+            <span id="brushSizeValue">1px</span>
+          </label>
+          <label>
+            Zoom
+            <input id="zoom" type="range" min="4" max="24" value="12">
+          </label>
+          <label class="check">
+            <input id="gridToggle" type="checkbox" checked>
+            Grid
+          </label>
+          <span class="coordinates" id="cursorPosition">x -- y --</span>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="pixelCanvas" width="192" height="192"></canvas>
+        </div>
+        <div class="framebar">
+          <button id="prevFrame">Prev</button>
+          <span id="frameInfo">Frame 1 / 1</span>
+          <button id="nextFrame">Next</button>
+          <button id="copyFrame">Copy frame</button>
+          <button id="pasteFrame">Paste frame</button>
+          <button id="pasteFrameBlack">Paste black</button>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <h2>Transform</h2>
+        <div class="button-grid">
+          <button id="flipH">Flip H</button>
+          <button id="flipV">Flip V</button>
+          <button id="crop">Crop</button>
+          <button id="clear">Clear</button>
+        </div>
+        <div class="button-grid four">
+          <button data-shift="0,-1">Up</button>
+          <button data-shift="-1,0">Left</button>
+          <button data-shift="1,0">Right</button>
+          <button data-shift="0,1">Down</button>
+        </div>
+        <h2>Slice</h2>
+        <div class="row">
+          <label>
+            Frame W
+            <input id="sliceWidth" type="number" min="1" max="128" value="16">
+          </label>
+          <label>
+            Frame H
+            <input id="sliceHeight" type="number" min="1" max="64" value="16">
+          </label>
+        </div>
+        <button id="sliceSprite">Slice current image</button>
+        <h2>Export</h2>
+        <div class="stats" id="stats"></div>
+        <div class="button-grid">
+          <button id="exportC">C array</button>
+          <button id="exportAscii">ASCII</button>
+          <button id="copyOutput">Copy</button>
+          <button id="saveProject">Save draft</button>
+          <button id="downloadPng">PNG</button>
+        </div>
+        <textarea id="output" spellcheck="false"></textarea>
+      </aside>
+    </section>
+
+    <section id="audioWorkspace" class="workspace audio-workspace hidden">
+      <section class="editor audio-editor">
+        <div class="toolbar">
+          <label>
+            Project sounds
+            <select id="projectAudio">
+              <option value="">Loading sounds</option>
+            </select>
+          </label>
+          <label>
+            Name
+            <input id="audioName" type="text" value="tone">
+          </label>
+          <button id="playAudio">Play</button>
+          <div class="mode-tabs compact">
+            <button data-audio-view="roll" class="active">Roll</button>
+            <button data-audio-view="events">Events</button>
+          </div>
+        </div>
+        <div class="piano-roll" id="audioRoll"></div>
+        <div class="audio-events" id="audioEvents"></div>
+        <div class="framebar">
+          <button id="addAudioEvent">Add event</button>
+          <button id="exportAudioJson">JSON</button>
+          <button id="exportAudioC">C array</button>
+          <button id="saveAudioDraft">Save draft</button>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <h2>Audio Output</h2>
+        <div class="stats" id="audioStats"></div>
+        <textarea id="audioOutput" spellcheck="false"></textarea>
+      </aside>
+    </section>
+  </main>
+
+  <script src="app.js?v=pet-studio-4"></script>
+</body>
+</html>
