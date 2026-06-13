@@ -72,6 +72,7 @@ function setupPlayer() {
   hexLink.href = rom;
   player.addEventListener("load", () => {
     attachFrameKeyboardListeners();
+    player.focus();
     setPlayerMuted(audioMuted);
   });
 }
