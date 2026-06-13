@@ -232,8 +232,8 @@ a {
 
 .dpad {
   position: relative;
-  width: 182px;
-  height: 182px;
+  width: 200px;
+  height: 200px;
   transform: translateX(10px);
 }
 
@@ -497,8 +497,8 @@ a {
   }
 
   .dpad {
-    width: 134px;
-    height: 134px;
+    width: 150px;
+    height: 150px;
     transform: translateX(5px);
   }
 
