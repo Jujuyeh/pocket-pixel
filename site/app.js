@@ -75,6 +75,13 @@ function setupPlayer() {
 function eventTargets() {
   const iframe = document.querySelector("#player");
   const targets = [window];
+  targets.push(...frameTargets(iframe));
+
+  return targets;
+}
+
+function frameTargets(iframe = document.querySelector("#player")) {
+  const targets = [];
 
   try {
     if (iframe.contentWindow) targets.push(iframe.contentWindow);
@@ -93,6 +100,24 @@ function eventTargets() {
 }
 
 function dispatchKey(type, logicalKey) {
+  dispatchKeyToTargets(type, logicalKey, eventTargets());
+}
+
+function dispatchFrameKey(type, logicalKey) {
+  dispatchKeyToTargets(type, logicalKey, frameTargets());
+}
+
+function focusPlayerCanvas() {
+  const iframe = document.querySelector("#player");
+  try {
+    const canvas = iframe.contentDocument?.querySelector("canvas");
+    canvas?.focus();
+  } catch (_) {
+    // Same-origin Pages builds can focus the canvas. Cross-origin previews cannot.
+  }
+}
+
+function dispatchKeyToTargets(type, logicalKey, targets) {
   const config = keyConfig[logicalKey];
   if (!config) return;
 
@@ -105,7 +130,7 @@ function dispatchKey(type, logicalKey) {
     cancelable: true
   };
 
-  for (const target of eventTargets()) {
+  for (const target of targets) {
     target.dispatchEvent(new KeyboardEvent(type, init));
   }
 }
@@ -176,14 +201,22 @@ function setupControls() {
   window.addEventListener("keydown", (event) => {
     const logicalKey = keyboardAliases.get(event.key);
     if (!logicalKey) return;
+    event.preventDefault();
     setButtonState(logicalKey, true);
+    if (event.isTrusted) {
+      dispatchFrameKey("keydown", logicalKey);
+    }
   });
 
   window.addEventListener("keyup", (event) => {
     const logicalKey = keyboardAliases.get(event.key);
     if (!logicalKey) return;
+    event.preventDefault();
     if (!activeKeys.has(logicalKey)) {
       setButtonState(logicalKey, false);
+    }
+    if (event.isTrusted) {
+      dispatchFrameKey("keyup", logicalKey);
     }
   });
 }
@@ -198,6 +231,7 @@ function reflectKeyboardEvent(event, pressed) {
 function attachFrameKeyboardListeners() {
   const iframe = document.querySelector("#player");
   try {
+    focusPlayerCanvas();
     iframe.contentWindow.addEventListener("keydown", (event) => reflectKeyboardEvent(event, true));
     iframe.contentWindow.addEventListener("keyup", (event) => reflectKeyboardEvent(event, false));
   } catch (_) {

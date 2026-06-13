@@ -39,16 +39,43 @@ a {
 .stage {
   min-height: 100vh;
   display: grid;
+  grid-template-rows: auto auto;
   place-items: center;
+  align-content: center;
+  gap: clamp(14px, 2.8vw, 26px);
   padding: clamp(14px, 4vw, 34px);
 }
 
-.device {
-  width: min(100%, 830px);
+.page-title {
   display: grid;
-  grid-template-rows: auto auto 132px;
-  gap: 18px;
-  padding: clamp(18px, 3vw, 30px);
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.page-title h1,
+.page-title p {
+  margin: 0;
+}
+
+.page-title h1 {
+  font-size: clamp(28px, 4.8vw, 52px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.page-title p {
+  font-size: clamp(10px, 1.5vw, 14px);
+  font-weight: 400;
+  color: #665843;
+}
+
+.device {
+  width: min(100%, 540px);
+  display: grid;
+  grid-template-rows: auto 210px;
+  gap: 24px;
+  padding: clamp(20px, 4vw, 34px);
   border: 3px solid var(--line);
   border-radius: 8px;
   background:
@@ -57,21 +84,13 @@ a {
   box-shadow: 0 18px 0 var(--panel-deep), 0 26px 34px var(--shadow);
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  min-height: 56px;
-}
-
 .pixel-logo {
-  --pixel: clamp(5px, 0.9vw, 8px);
+  --pixel: 3px;
   display: grid;
   grid-template-columns: repeat(24, var(--pixel));
   grid-template-rows: repeat(12, var(--pixel));
   gap: 0;
-  padding: 4px;
+  padding: 3px;
   background: var(--ink);
   image-rendering: pixelated;
 }
@@ -86,44 +105,21 @@ a {
   background: var(--paper);
 }
 
-.brand-copy {
-  display: grid;
-  justify-items: end;
-  gap: 4px;
-  white-space: nowrap;
-}
-
-.brand-copy p,
-.brand-copy span {
-  margin: 0;
-}
-
-.brand-copy p {
-  font-size: clamp(18px, 2.8vw, 30px);
-  font-weight: 900;
-}
-
-.brand-copy span {
-  font-size: 12px;
-  color: #665843;
-}
-
 .bezel {
-  width: min(100%, 700px);
-  aspect-ratio: 2 / 1;
+  width: min(100%, 430px);
   justify-self: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(12px, 2vw, 20px);
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  gap: 13px;
+  padding: 16px 16px 12px;
   border: 3px solid var(--line);
   border-radius: 6px;
   background: #26211c;
 }
 
 .screen {
-  height: 100%;
-  max-width: 100%;
+  width: 100%;
   aspect-ratio: 2 / 1;
   border: 3px solid #0f0d0b;
   border-radius: 3px;
@@ -141,15 +137,16 @@ a {
 
 .controls {
   display: grid;
-  grid-template-columns: 170px 1fr 190px;
-  align-items: center;
-  gap: clamp(12px, 4vw, 48px);
+  grid-template-columns: 185px 1fr 185px;
+  align-items: start;
+  justify-items: center;
+  gap: 10px;
 }
 
 .dpad {
   position: relative;
-  width: 142px;
-  height: 142px;
+  width: 168px;
+  height: 168px;
 }
 
 .pad,
@@ -164,13 +161,13 @@ a {
 
 .pad {
   position: absolute;
-  width: 48px;
-  height: 48px;
+  width: 58px;
+  height: 58px;
 }
 
 .pad.up,
 .pad.down {
-  left: 47px;
+  left: 55px;
 }
 
 .pad.up {
@@ -185,7 +182,7 @@ a {
 
 .pad.left,
 .pad.right {
-  top: 47px;
+  top: 55px;
 }
 
 .pad.left {
@@ -200,10 +197,10 @@ a {
 
 .pad-center {
   position: absolute;
-  left: 47px;
-  top: 47px;
-  width: 48px;
-  height: 48px;
+  left: 55px;
+  top: 55px;
+  width: 58px;
+  height: 58px;
   border: 3px solid var(--line);
   background: #29231d;
 }
@@ -211,9 +208,9 @@ a {
 .system-strip {
   align-self: stretch;
   display: grid;
-  grid-template-rows: 1fr auto;
   justify-items: center;
-  align-items: center;
+  align-items: start;
+  padding-top: 18px;
   gap: 12px;
   min-width: 0;
 }
@@ -288,22 +285,24 @@ a {
 .face-buttons {
   display: flex;
   justify-content: flex-end;
-  align-items: center;
-  gap: 24px;
+  align-items: flex-start;
+  gap: 20px;
+  padding-top: 38px;
 }
 
 .face {
-  width: 68px;
-  height: 68px;
+  width: 82px;
+  height: 82px;
   border-radius: 50%;
   color: var(--paper);
   font: inherit;
   font-weight: 900;
+  font-size: 18px;
 }
 
 .face span {
   display: block;
-  transform: translateY(1px);
+  transform: translateY(-2px);
 }
 
 .face-a {
@@ -328,28 +327,18 @@ a {
 @media (max-width: 760px) {
   .stage {
     align-items: start;
+    gap: 12px;
   }
 
   .device {
     aspect-ratio: auto;
     min-height: 0;
-    grid-template-rows: auto auto auto;
-  }
-
-  .brand {
-    min-height: 44px;
-  }
-
-  .brand-copy p {
-    font-size: 20px;
-  }
-
-  .brand-copy span {
-    display: none;
+    grid-template-rows: auto auto;
+    gap: 16px;
   }
 
   .controls {
-    grid-template-columns: 1fr 62px 1fr;
+    grid-template-columns: 1fr 48px 1fr;
     align-self: end;
     gap: 10px;
   }
