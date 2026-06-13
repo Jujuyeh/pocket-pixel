@@ -395,36 +395,15 @@ a {
 .audio-toggle::before {
   content: "";
   position: absolute;
-  left: 7px;
-  top: 8px;
-  width: 7px;
-  height: 10px;
+  inset: 4px;
   background: var(--line);
-  clip-path: polygon(0 25%, 45% 25%, 100% 0, 100% 100%, 45% 75%, 0 75%);
+  mask: url("assets/icons/speaker.svg") center / contain no-repeat;
+  -webkit-mask: url("assets/icons/speaker.svg") center / contain no-repeat;
 }
 
-.audio-toggle::after {
-  content: "";
-  position: absolute;
-  right: 8px;
-  top: 7px;
-  width: 8px;
-  height: 12px;
-  border: 2px solid var(--line);
-  border-left: 0;
-  border-radius: 0 9px 9px 0;
-}
-
-.audio-toggle.is-muted::after {
-  right: 9px;
-  top: 5px;
-  width: 12px;
-  height: 16px;
-  border: 0;
-  border-radius: 0;
-  background:
-    linear-gradient(45deg, transparent 43%, var(--line) 43% 57%, transparent 57%),
-    linear-gradient(-45deg, transparent 43%, var(--line) 43% 57%, transparent 57%);
+.audio-toggle.is-muted::before {
+  mask-image: url("assets/icons/mute.svg");
+  -webkit-mask-image: url("assets/icons/mute.svg");
 }
 
 .desktop-actions {
