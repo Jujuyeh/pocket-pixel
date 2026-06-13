@@ -43,7 +43,7 @@ a {
   place-items: center;
   align-content: center;
   gap: clamp(22px, 3.8vw, 42px);
-  padding: clamp(14px, 4vw, 34px);
+  padding: clamp(12px, 4vw, 34px);
 }
 
 .page-title {
@@ -57,9 +57,9 @@ a {
   width: min(76vw, 300px);
   display: grid;
   justify-items: center;
-  gap: 8px;
+  gap: 7px;
   margin-bottom: clamp(8px, 1.5vw, 14px);
-  padding: 16px 18px 18px;
+  padding: 16px 18px 12px;
   border: 3px solid var(--line);
   border-radius: 8px 8px 14px 14px;
   background:
@@ -86,15 +86,28 @@ a {
 }
 
 .cart-contacts {
-  width: 46%;
-  height: 15px;
+  width: 100%;
+  height: 18px;
+  padding: 4px 10px 0;
   border: 2px solid #2a241d;
-  border-top: 0;
+  border-bottom: 0;
+  border-radius: 0 0 10px 10px;
+  background:
+    linear-gradient(#5b5851, #777269);
+  overflow: hidden;
+}
+
+.cart-contacts::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 12px;
+  border-radius: 7px 7px 0 0;
   background:
     repeating-linear-gradient(
       90deg,
-      #caa64e 0 7px,
-      #2d3f2c 7px 11px
+      #caa64e 0 8px,
+      #2d3f2c 8px 13px
     );
 }
 
@@ -134,7 +147,7 @@ a {
   content: "";
   position: absolute;
   left: 50%;
-  bottom: -16px;
+  bottom: -21px;
   width: 62px;
   height: 15px;
   transform: translateX(-50%);
@@ -210,6 +223,7 @@ a {
   position: relative;
   width: 168px;
   height: 168px;
+  transform: translateX(10px);
 }
 
 .pad,
@@ -346,28 +360,44 @@ a {
 }
 
 .face-buttons {
+  position: relative;
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
-  gap: 14px;
+  gap: 8px;
   padding-top: 50px;
+  transform: translateX(-8px);
+}
+
+.face-buttons::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  top: 37px;
+  height: 106px;
+  border-radius: 999px;
+  background: rgba(42, 36, 29, 0.46);
 }
 
 .face {
   --rest-y: 0;
   --active-y: 4px;
+  position: relative;
+  z-index: 1;
   width: 82px;
   height: 82px;
   border-radius: 50%;
   color: var(--paper);
-  font: inherit;
+  font-family: Impact, Haettenschweiler, "Arial Black", system-ui, sans-serif;
   font-weight: 900;
-  font-size: 18px;
+  font-size: 30px;
   transform: translateY(var(--rest-y));
 }
 
 .face span {
   display: block;
+  opacity: 0.6;
   transform: translateY(-2px);
 }
 
@@ -379,8 +409,8 @@ a {
 
 .face-b {
   background: var(--accent);
-  --rest-y: -6px;
-  --active-y: -2px;
+  --rest-y: -14px;
+  --active-y: -10px;
 }
 
 .pad.is-active,
@@ -392,7 +422,9 @@ a {
 @media (max-width: 760px) {
   .stage {
     align-items: start;
+    align-content: start;
     gap: 16px;
+    padding-top: 8px;
   }
 
   .device {
@@ -411,6 +443,7 @@ a {
   .dpad {
     width: 124px;
     height: 124px;
+    transform: translateX(5px);
   }
 
   .pad {
@@ -437,11 +470,18 @@ a {
 
   .face-buttons {
     gap: 14px;
+    transform: translateX(-4px);
+  }
+
+  .face-buttons::before {
+    top: 31px;
+    height: 78px;
   }
 
   .face {
     width: 58px;
     height: 58px;
+    font-size: 22px;
   }
 
   .desktop-actions,
