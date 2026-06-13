@@ -258,8 +258,8 @@ a {
   --shape: polygon(0 0, 100% 0, 100% 100%, 0 100%);
   appearance: none;
   position: absolute;
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   z-index: 1;
   border: 0;
   background: transparent;
@@ -292,32 +292,32 @@ a {
 .pad.up,
 .pad.down {
   left: 52px;
-  height: 76px;
+  height: 82px;
 }
 
 .pad.up {
-  --shape: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+  --shape: polygon(0 0, 100% 0, 100% 82%, 50% 100%, 0 82%);
   top: 4px;
 }
 
 .pad.down {
-  --shape: polygon(0 30%, 50% 0, 100% 30%, 100% 100%, 0 100%);
+  --shape: polygon(0 18%, 50% 0, 100% 18%, 100% 100%, 0 100%);
   bottom: 4px;
 }
 
 .pad.left,
 .pad.right {
   top: 52px;
-  width: 76px;
+  width: 82px;
 }
 
 .pad.left {
-  --shape: polygon(0 0, 70% 0, 100% 50%, 70% 100%, 0 100%);
+  --shape: polygon(0 0, 82% 0, 100% 50%, 82% 100%, 0 100%);
   left: 4px;
 }
 
 .pad.right {
-  --shape: polygon(30% 0, 100% 0, 100% 100%, 30% 100%, 0 50%);
+  --shape: polygon(18% 0, 100% 0, 100% 100%, 18% 100%, 0 50%);
   right: 4px;
 }
 
@@ -421,11 +421,11 @@ a {
   position: absolute;
   left: -10px;
   right: -12px;
-  top: 48px;
+  top: 44px;
   height: 108px;
   border-radius: 999px;
   background: rgba(42, 36, 29, 0.46);
-  transform: rotate(-15deg) scale(1);
+  transform: rotate(-18deg) scale(1);
 }
 
 .face {
@@ -503,20 +503,20 @@ a {
   }
 
   .pad {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
   }
 
   .pad.up,
   .pad.down {
     left: 40px;
-    height: 58px;
+    height: 64px;
   }
 
   .pad.left,
   .pad.right {
     top: 40px;
-    width: 58px;
+    width: 64px;
   }
 
   .pad.up {
@@ -541,8 +541,9 @@ a {
   }
 
   .face-buttons::before {
-    top: 34px;
+    top: 30px;
     height: 80px;
+    transform: rotate(-18deg) scale(1);
   }
 
   .face {
