@@ -4,5 +4,9 @@
 /backups/
 /build/
 /dist/
+/site/build/
+/site/vendor/ardens/ArdensPlayer.js
+/site/vendor/ardens/ArdensPlayer.wasm
+/site/vendor/ardens/LICENSE.txt
 /result
 __pycache__/

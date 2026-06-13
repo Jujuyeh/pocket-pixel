@@ -105,6 +105,17 @@ Open Arduboy Cloud to test the generated hex with Ardens:
 make cloud
 ```
 
+Prepare the static web player used by GitHub Pages:
+
+```sh
+make web-site
+```
+
+This compiles the stable HEX, copies it to `site/build/`, and fetches the
+Ardens web player files into `site/vendor/ardens/` for the local Pages preview
+or CI artifact. The fetched Ardens binaries are generated files and are not
+tracked in git.
+
 The project defaults to an Arduboy FX-safe workflow. `make upload` refuses to
 overwrite the sketch when `TARGET=fx`. See `docs/fx-workflow.md`.
 
@@ -117,7 +128,8 @@ make fx-entry
 ## Releases
 
 GitHub Actions builds the stable HEX, debug HEX, and Arduboy FX catalog entry on
-pushes and pull requests.
+pushes and pull requests. Pushes to `main` and version tags also publish the
+GitHub Pages web player.
 
 Create a public GitHub Release by pushing a version tag:
 
@@ -179,6 +191,7 @@ pocket-pixel/
 |   `-- sprite-guidelines.md      Sprite workflow and pixel-art handoff
 |-- profiles/
 |   `-- pixel.json                Active pet personality source profile
+|-- site/                         GitHub Pages web player shell
 |-- skills/                       Project-local agent workflows and scripts
 |-- src/
 |   |-- Assets.*                  Sprites, bitmap data, and tone sequences

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Pocket Pixel</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="stage">
+      <section class="device" aria-label="Pocket Pixel web player">
+        <header class="brand">
+          <div class="pixel-logo" id="jujuyeh-logo" aria-label="Jujuyeh"></div>
+          <div class="brand-copy">
+            <p>POCKET PIXEL</p>
+            <span>ARDUBOY FX</span>
+          </div>
+        </header>
+
+        <div class="bezel">
+          <div class="screen">
+            <iframe
+              id="player"
+              title="Pocket Pixel running in Ardens"
+              allow="autoplay; fullscreen"
+              src="about:blank"></iframe>
+          </div>
+        </div>
+
+        <div class="controls" aria-label="Arduboy controls">
+          <div class="dpad" aria-label="Directional pad">
+            <button class="pad up" data-key="ArrowUp" aria-label="Up"></button>
+            <button class="pad left" data-key="ArrowLeft" aria-label="Left"></button>
+            <button class="pad right" data-key="ArrowRight" aria-label="Right"></button>
+            <button class="pad down" data-key="ArrowDown" aria-label="Down"></button>
+            <div class="pad-center" aria-hidden="true"></div>
+          </div>
+
+          <div class="system-strip">
+            <div class="leds" aria-hidden="true">
+              <span class="led led-red"></span>
+              <span class="led led-green"></span>
+              <span class="led led-blue"></span>
+            </div>
+            <a class="hex-link" id="hex-link" href="build/pocket-pixel-latest.hex">HEX</a>
+          </div>
+
+          <div class="face-buttons" aria-label="Action buttons">
+            <button class="face face-b" data-key="x" aria-label="B"><span>B</span></button>
+            <button class="face face-a" data-key="z" aria-label="A"><span>A</span></button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

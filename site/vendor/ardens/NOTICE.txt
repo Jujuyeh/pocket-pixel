@@ -1,0 +1,6 @@
+Ardens web player files are fetched during the Pocket Pixel Pages build.
+
+Ardens is copyright (c) 2023 Peter Brown and distributed under the MIT
+License. See LICENSE.txt in this directory.
+
+Source: https://github.com/tiberiusbrown/Ardens

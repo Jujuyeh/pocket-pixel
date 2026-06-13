@@ -330,6 +330,7 @@ Local commands:
 - `make compile`: builds the stable HEX.
 - `make compile-debug`: builds the debug HEX.
 - `make fx-entry`: prepares `dist/fx-cart/...` with HEX and FX banner.
+- `make web-site`: prepares the static GitHub Pages player under `site/`.
 - `make libretro`: runs the stable build with RetroArch and Ardens.
 - `make libretro-debug`: runs the debug build.
 
@@ -349,6 +350,13 @@ On push and pull request:
 - Compiles stable and debug builds.
 - Prepares FX catalog entry.
 - Uploads workflow artifacts.
+
+On pushes to `main` and version tags:
+
+- Prepares the static Pages site.
+- Copies the stable HEX to `site/build/pocket-pixel-latest.hex`.
+- Downloads Ardens web player files into the Pages artifact.
+- Deploys GitHub Pages.
 
 On tags matching `v*`:
 

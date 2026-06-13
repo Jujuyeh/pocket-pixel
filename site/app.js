@@ -1,0 +1,210 @@
+const logoPattern = [
+  "########################",
+  "########################",
+  "########.####..##.##.###",
+  "####.#.#######.##.###.##",
+  "#.##.#.###.#.#.##.###.##",
+  "####...#.#.#.##..####..#",
+  "##.##..#.#...##.##..#.#.",
+  "##..####.###.##.#.#.#.#.",
+  "###.##.#.#####.##...#.#.",
+  "###.##...########.######",
+  "#..##############...####",
+  "########################"
+];
+
+const keyConfig = {
+  ArrowUp: { key: "ArrowUp", code: "ArrowUp", keyCode: 38 },
+  ArrowRight: { key: "ArrowRight", code: "ArrowRight", keyCode: 39 },
+  ArrowDown: { key: "ArrowDown", code: "ArrowDown", keyCode: 40 },
+  ArrowLeft: { key: "ArrowLeft", code: "ArrowLeft", keyCode: 37 },
+  z: { key: "z", code: "KeyZ", keyCode: 90 },
+  x: { key: "x", code: "KeyX", keyCode: 88 }
+};
+
+const keyboardAliases = new Map([
+  ["ArrowUp", "ArrowUp"],
+  ["ArrowRight", "ArrowRight"],
+  ["ArrowDown", "ArrowDown"],
+  ["ArrowLeft", "ArrowLeft"],
+  ["z", "z"],
+  ["a", "z"],
+  ["x", "x"],
+  ["s", "x"],
+  ["b", "x"]
+]);
+
+const activeKeys = new Set();
+const pointerKeys = new Map();
+const buttons = new Map();
+
+function renderLogo() {
+  const logo = document.querySelector("#jujuyeh-logo");
+  if (!logo) return;
+
+  logoPattern.join("").split("").forEach((pixel) => {
+    const cell = document.createElement("i");
+    if (pixel === ".") {
+      cell.className = "on";
+    }
+    logo.append(cell);
+  });
+}
+
+function gameFileUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const override = params.get("file");
+  if (override) return override;
+  return new URL("build/pocket-pixel-latest.hex", window.location.href).href;
+}
+
+function setupPlayer() {
+  const player = document.querySelector("#player");
+  const hexLink = document.querySelector("#hex-link");
+  const rom = gameFileUrl();
+  const playerUrl = new URL("player.html", window.location.href);
+  playerUrl.searchParams.set("file", rom);
+  playerUrl.searchParams.set("grid", "none");
+  playerUrl.searchParams.set("palette", "default");
+
+  player.src = playerUrl.href;
+  hexLink.href = rom;
+  player.addEventListener("load", attachFrameKeyboardListeners);
+}
+
+function eventTargets() {
+  const iframe = document.querySelector("#player");
+  const targets = [window];
+
+  try {
+    if (iframe.contentWindow) targets.push(iframe.contentWindow);
+    const doc = iframe.contentDocument;
+    if (doc) {
+      targets.push(doc);
+      const canvas = doc.querySelector("canvas");
+      if (canvas) targets.push(canvas);
+    }
+  } catch (_) {
+    // Same-origin Pages builds can receive synthetic input. Cross-origin local
+    // previews still show the controller state but cannot forward input.
+  }
+
+  return targets;
+}
+
+function dispatchKey(type, logicalKey) {
+  const config = keyConfig[logicalKey];
+  if (!config) return;
+
+  const init = {
+    key: config.key,
+    code: config.code,
+    keyCode: config.keyCode,
+    which: config.keyCode,
+    bubbles: true,
+    cancelable: true
+  };
+
+  for (const target of eventTargets()) {
+    target.dispatchEvent(new KeyboardEvent(type, init));
+  }
+}
+
+function setButtonState(logicalKey, pressed) {
+  const control = buttons.get(logicalKey);
+  if (control) {
+    control.classList.toggle("is-active", pressed);
+  }
+}
+
+function pressKey(logicalKey) {
+  if (activeKeys.has(logicalKey)) return;
+  activeKeys.add(logicalKey);
+  setButtonState(logicalKey, true);
+  dispatchKey("keydown", logicalKey);
+}
+
+function releaseKey(logicalKey) {
+  if (!activeKeys.has(logicalKey)) return;
+  activeKeys.delete(logicalKey);
+  setButtonState(logicalKey, false);
+  dispatchKey("keyup", logicalKey);
+}
+
+function keyFromPoint(x, y) {
+  const element = document.elementFromPoint(x, y);
+  const control = element?.closest?.("[data-key]");
+  return control?.dataset.key;
+}
+
+function setupControls() {
+  document.querySelectorAll("[data-key]").forEach((control) => {
+    buttons.set(control.dataset.key, control);
+
+    control.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      control.setPointerCapture(event.pointerId);
+      pointerKeys.set(event.pointerId, control.dataset.key);
+      pressKey(control.dataset.key);
+    });
+
+    control.addEventListener("pointermove", (event) => {
+      event.preventDefault();
+      const previous = pointerKeys.get(event.pointerId);
+      const next = keyFromPoint(event.clientX, event.clientY);
+      if (previous === next) return;
+      if (previous) releaseKey(previous);
+      if (next) {
+        pointerKeys.set(event.pointerId, next);
+        pressKey(next);
+      } else {
+        pointerKeys.delete(event.pointerId);
+      }
+    });
+
+    const stop = (event) => {
+      event.preventDefault();
+      const key = pointerKeys.get(event.pointerId);
+      if (key) releaseKey(key);
+      pointerKeys.delete(event.pointerId);
+    };
+
+    control.addEventListener("pointerup", stop);
+    control.addEventListener("pointercancel", stop);
+  });
+
+  window.addEventListener("keydown", (event) => {
+    const logicalKey = keyboardAliases.get(event.key);
+    if (!logicalKey) return;
+    setButtonState(logicalKey, true);
+  });
+
+  window.addEventListener("keyup", (event) => {
+    const logicalKey = keyboardAliases.get(event.key);
+    if (!logicalKey) return;
+    if (!activeKeys.has(logicalKey)) {
+      setButtonState(logicalKey, false);
+    }
+  });
+}
+
+function reflectKeyboardEvent(event, pressed) {
+  const logicalKey = keyboardAliases.get(event.key);
+  if (!logicalKey) return;
+  if (!pressed && activeKeys.has(logicalKey)) return;
+  setButtonState(logicalKey, pressed);
+}
+
+function attachFrameKeyboardListeners() {
+  const iframe = document.querySelector("#player");
+  try {
+    iframe.contentWindow.addEventListener("keydown", (event) => reflectKeyboardEvent(event, true));
+    iframe.contentWindow.addEventListener("keyup", (event) => reflectKeyboardEvent(event, false));
+  } catch (_) {
+    // Cross-origin previews cannot mirror iframe keyboard state.
+  }
+}
+
+renderLogo();
+setupPlayer();
+setupControls();

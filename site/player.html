@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ardens Player - Pocket Pixel</title>
+    <style>
+      html,
+      body,
+      #canvas {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #f8f7ef;
+      }
+
+      #canvas {
+        display: block;
+        image-rendering: crisp-edges;
+        image-rendering: pixelated;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas
+      id="canvas"
+      tabindex="0"
+      ondrop="dropHandler(event)"
+      ondragover="event.preventDefault()"
+      oncontextmenu="event.preventDefault()"></canvas>
+
+    <script>
+      var Module = {
+        canvas: document.getElementById("canvas")
+      };
+
+      Module.canvas.addEventListener("click", () => Module.canvas.focus());
+
+      function loadFile(param, fname, fdata) {
+        const ptr = Module._malloc(fdata.length);
+        Module.HEAPU8.set(fdata, ptr);
+        Module.ccall("load_file", "number", ["string", "string", "number", "number"], [param, fname, ptr, fdata.length]);
+        Module._free(ptr);
+      }
+
+      function fetchGameFile(url) {
+        return fetch(url, { credentials: "same-origin" })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`${response.status} ${response.url}`);
+            }
+            return response.arrayBuffer();
+          })
+          .catch(() => fetch(`https://api.combee.net/arduboyGet?url=${encodeURIComponent(url)}`)
+            .then((response) => response.arrayBuffer()));
+      }
+
+      function dropHandler(event) {
+        event.preventDefault();
+        [...event.dataTransfer.files].forEach((file) => {
+          const reader = new FileReader();
+          reader.onloadend = (evt) => {
+            loadFile("file", file.name, new Uint8Array(evt.target.result));
+          };
+          reader.readAsArrayBuffer(file);
+        });
+      }
+
+      Module.onRuntimeInitialized = function() {
+        const params = new URLSearchParams(window.location.search);
+        for (const [param, value] of params.entries()) {
+          if (Module.ccall("setparam", null, ["string", "string"], [param, value])) {
+            continue;
+          }
+
+          Module.ccall("setparam", null, ["string", "string"], ["loading", "1"]);
+          fetchGameFile(value)
+            .then((buffer) => loadFile(param, value, new Uint8Array(buffer)));
+        }
+      };
+    </script>
+    <script src="vendor/ardens/ArdensPlayer.js"></script>
+  </body>
+</html>
