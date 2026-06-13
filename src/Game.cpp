@@ -84,6 +84,8 @@ constexpr uint8_t FEED_POOP_H = 16;
 constexpr uint8_t FEED_COIN_W = 8;
 constexpr uint8_t FEED_COIN_H = 8;
 constexpr uint8_t FEED_COIN_REWARD = 50;
+constexpr uint8_t FEED_FISH_COST = 50;
+constexpr uint8_t FEED_CHICKEN_COST = 20;
 constexpr uint8_t FEED_BOWL_W = 16;
 constexpr uint8_t FEED_BOWL_Y = 42;
 constexpr uint8_t FEED_BOWL_MIN_X = 2;
@@ -849,7 +851,7 @@ uint8_t feedItemHeight(FeedItemType type) {
 }
 
 FeedItemType randomFeedItemType() {
-    if (random(0, 10) == 0) {
+    if (random(0, pet.money < 100 ? 4 : 10) == 0) {
         return FEED_ITEM_COIN;
     }
     if (random(0, 7) == 0) {
@@ -959,7 +961,6 @@ void moveFeedBowl(int16_t delta) {
 // Successful feed always finishes at full life regardless of partial progress.
 void finishFeedMinigame() {
     setPetLife(MAX_LIFE);
-    takeMoney(ActivePersonality.feedCost);
     addXpTenths(1);
     sound.tones(feedDone);
     saveGame();
@@ -1695,9 +1696,23 @@ void updateFeedMinigame() {
                 feedGame.coinFeedbackFrames = framesAtGameFps(8);
                 sound.tones(coinPickup);
             } else if (feedGame.foodUnits < FEED_FULL_UNITS) {
+                uint8_t cost = item.type == FEED_ITEM_FISH ? FEED_FISH_COST : FEED_CHICKEN_COST;
+                if (pet.money < cost) {
+                    feedGame.flashFrames = framesAtGameFps(4);
+                    sound.tones(feedBad);
+                    item.active = false;
+                    continue;
+                }
+                takeMoney(cost);
                 // Food increments by one half-heart unit.
                 feedGame.foodUnits++;
-                sound.tones(feedCatch);
+                if (pet.money == 0) {
+                    // Running out of money flashes like poop, but hunger progress stays.
+                    feedGame.flashFrames = framesAtGameFps(4);
+                    sound.tones(feedBad);
+                } else {
+                    sound.tones(feedCatch);
+                }
             }
             item.active = false;
             continue;
@@ -1739,9 +1754,11 @@ void drawFeedMinigame() {
     tinyfont.setCursor(43, 55);
     tinyfont.print("NEED ");
     tinyfont.print(FEED_FULL_UNITS - feedGame.foodUnits);
-    tinyfont.setCursor(95, 55);
-    tinyfont.print("$");
-    tinyfont.print(pet.money);
+    if (pet.money >= 100 || (arduboy.frameCount / framesAtGameFps(15)) % 2 == 0) {
+        tinyfont.setCursor(95, 55);
+        tinyfont.print("$");
+        tinyfont.print(pet.money);
+    }
     if (feedGame.coinFeedbackFrames > 0) {
         tinyfont.setCursor(56, 7);
         tinyfont.print("+50");
@@ -2282,17 +2299,25 @@ void menu() {
 }
 
 void scratching() {
-    if ((frameCounter / framesAtGameFps(12)) % 2 == 0) {
+    static uint8_t scratchFrame = 0;
+    if (scratchFrame == 0) {
+        takeMoney(100);
+    }
+    if (scratchFrame < framesAtGameFps(6)) {
         tinyfont.setCursor(32, 10);
         tinyfont.print("-100");
     }
 
+    scratchFrame++;
+    if (scratchFrame >= framesAtGameFps(12)) {
+        scratchFrame = 0;
+    }
     drawScratchMarks();
 }
 
 // FX RGB LED siren mirrors the scratching status on real hardware.
 void updateScratchSirenLed() {
-    if (!petHas(SCRATCHING)) {
+    if (!petHas(SCRATCHING) || petHas(SLEEPING)) {
         arduboy.digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF);
         return;
     }
@@ -2448,20 +2473,28 @@ void initChances() {
 uint8_t bootBias = 10;
 // Random status changes are biased down at boot to avoid instant chaos on load.
 void randomEmotion() {
+    bool sleeping = petHas(SLEEPING);
     for (uint8_t i = 0; i < PET_STATUS_COUNT; i++) {
+        if (sleeping && i != SLEEPING) {
+            continue;
+        }
         uint8_t randSample = random(0,chance[i]);
         if (randSample / bootBias == (chance[i]-1) / bootBias) {
             PetStatus status = static_cast<PetStatus>(i);
             if (petHas(status) && (status == SLEEPING || status == SCRATCHING)) {
                 petUnset(status);
-                if (i == SCRATCHING) takeMoney(100);
                 clearZZZ();
             } else if (status == HUNGRY) {
                 // Hunger is life loss, not an independently persisted flag.
                 hurtPet(1);
             } else {
-                bool forcedAwake = status == SLEEPING && (petHas(ANXIOUS) || petHas(DIRTY)); 
-                if (!forcedAwake) petSet(status);
+                if (status == SLEEPING && (petHas(ANXIOUS) || petHas(DIRTY) || petHas(SCRATCHING))) {
+                    continue;
+                }
+                petSet(status);
+                if (status == SLEEPING) {
+                    sleeping = true;
+                }
             }
         }
     }
@@ -2501,13 +2534,14 @@ void idle() {
         drawMoneyHud(tinyfont);
     }
     
-    if (petHas(SLEEPING)) sleep(petDx);
+    bool sleeping = petHas(SLEEPING);
+    if (sleeping) sleep(petDx);
     else {
         if (petHas(ANXIOUS))     anxious(petDx);
         if (petHas(BORED))       bored(petDx);
         if (petHas(SCRATCHING))  scratching();
     }
-    if (petHas(DIRTY)) dirty(petDx);
+    if (!sleeping && petHas(DIRTY)) dirty(petDx);
 }
 
 /************************** MAIN **************************/

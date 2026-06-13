@@ -163,7 +163,7 @@ void printBool(Tinyfont &tinyfont, uint8_t item, const char *label, bool enabled
     printCursor(tinyfont, item);
     tinyfont.print(label);
     tinyfont.setCursor(72, 6 + item * 5);
-    tinyfont.print(enabled ? "on" : "off");
+    tinyfont.print(enabled ? "1" : "0");
 }
 
 // Numeric row renderer for counters edited in place.
@@ -177,12 +177,12 @@ void printCounter(Tinyfont &tinyfont, uint8_t item, const char *label, uint16_t 
 // Life row also shows whether the derived HUNGRY condition is active.
 void printLife(Tinyfont &tinyfont) {
     printCursor(tinyfont, ITEM_LIFE);
-    tinyfont.print("life");
+    tinyfont.print("hp");
     tinyfont.setCursor(72, 6 + ITEM_LIFE * 5);
     tinyfont.print(pet.life);
     tinyfont.print("/");
     tinyfont.print(MAX_LIFE);
-    tinyfont.print(petHas(HUNGRY) ? " H" : " ok");
+    tinyfont.print(petHas(HUNGRY) ? " H" : "");
 }
 
 // Command rows have labels but no right-side value.
@@ -193,24 +193,18 @@ void printAction(Tinyfont &tinyfont, uint8_t item, const char *label) {
 
 // Full-screen debug overlay; kept dense to fit every test control at once.
 void drawMenu(Arduboy2 &arduboy, Tinyfont &tinyfont) {
-    arduboy.drawRect(0, 0, 128, 64, BLACK);
-    tinyfont.setCursor(42, 0);
-    tinyfont.print("DEBUG");
-
     printLife(tinyfont);
-    printCounter(tinyfont, ITEM_MONEY, "money", pet.money);
-    printCounter(tinyfont, ITEM_LEVEL, "level", pet.level);
-    printCounter(tinyfont, ITEM_XP, "xp/10", pet.xpTenths);
-    printBool(tinyfont, ITEM_DIRTY, "dirty", petHas(DIRTY));
-    printBool(tinyfont, ITEM_BORED, "bored", petHas(BORED));
-    printBool(tinyfont, ITEM_ANXIOUS, "anxious", petHas(ANXIOUS));
-    printBool(tinyfont, ITEM_SCRATCHING, "scratch", petHas(SCRATCHING));
-    printBool(tinyfont, ITEM_SLEEPING, "sleep", petHas(SLEEPING));
-    printAction(tinyfont, ITEM_CLEAR_FLAGS, "clear flags");
-    printAction(tinyfont, ITEM_RESET_SAVE, "reset save");
+    printCounter(tinyfont, ITEM_MONEY, "$", pet.money);
+    printCounter(tinyfont, ITEM_LEVEL, "lv", pet.level);
+    printCounter(tinyfont, ITEM_XP, "xp", pet.xpTenths);
+    printBool(tinyfont, ITEM_DIRTY, "di", petHas(DIRTY));
+    printBool(tinyfont, ITEM_BORED, "bo", petHas(BORED));
+    printBool(tinyfont, ITEM_ANXIOUS, "an", petHas(ANXIOUS));
+    printBool(tinyfont, ITEM_SCRATCHING, "sc", petHas(SCRATCHING));
+    printBool(tinyfont, ITEM_SLEEPING, "sl", petHas(SLEEPING));
+    printAction(tinyfont, ITEM_CLEAR_FLAGS, "clr");
+    printAction(tinyfont, ITEM_RESET_SAVE, "rst");
 
-    tinyfont.setCursor(84, 58);
-    tinyfont.print("< > edit");
 }
 }
 
