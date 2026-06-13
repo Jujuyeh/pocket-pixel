@@ -283,9 +283,11 @@ a {
 }
 
 .pad::after {
-  inset: 3px;
+  inset: 0;
   background: #29231d;
   box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.28);
+  transform: scale(0.9);
+  transform-origin: center;
 }
 
 .pad.up,
