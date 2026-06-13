@@ -59,7 +59,11 @@
           }
         },
         async prime() {
-          return this.unlock(true);
+          this.unlockRequested = true;
+          const wasMuted = this.muted;
+          this.setMuted(true);
+          if (wasMuted) return true;
+          return this.setMuted(false);
         },
         async setMuted(muted) {
           this.muted = Boolean(muted);
