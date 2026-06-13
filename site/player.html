@@ -39,10 +39,12 @@
 
       const PocketPixelAudio = {
         muted: false,
+        unlockRequested: false,
         context() {
           return Module._saudio_context || null;
         },
         async unlock() {
+          this.unlockRequested = true;
           const context = this.context();
           if (!context || this.muted || context.state !== "suspended") return;
           try {
@@ -74,6 +76,16 @@
       };
 
       window.PocketPixelAudio = PocketPixelAudio;
+
+      window.setInterval(() => {
+        const context = PocketPixelAudio.context();
+        if (!context) return;
+        if (PocketPixelAudio.muted && context.state !== "suspended") {
+          PocketPixelAudio.setMuted(true);
+        } else if (PocketPixelAudio.unlockRequested && !PocketPixelAudio.muted) {
+          PocketPixelAudio.unlock();
+        }
+      }, 250);
 
       window.addEventListener("message", (event) => {
         if (event.origin !== window.location.origin) return;

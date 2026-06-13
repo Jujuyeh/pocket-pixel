@@ -76,6 +76,17 @@ function setupPlayer() {
   });
 }
 
+function updateDeviceScale() {
+  const shell = document.querySelector(".device-shell");
+  const device = document.querySelector(".device");
+  if (!shell || !device) return;
+
+  const available = Math.max(280, Math.min(520, document.documentElement.clientWidth - 24));
+  const scale = Math.min(1, available / 520);
+  shell.style.setProperty("--device-scale", String(scale));
+  shell.style.setProperty("--device-height", `${device.offsetHeight}px`);
+}
+
 function eventTargets() {
   const iframe = document.querySelector("#player");
   const targets = [window];
@@ -142,24 +153,36 @@ function postPlayerAudioMessage(message) {
 function unlockPlayerAudio() {
   const api = playerAudioApi();
   if (api?.unlock) {
-    api.unlock();
-  } else {
-    postPlayerAudioMessage({ type: "pocket-pixel:audio-unlock" });
+    return api.unlock();
   }
+
+  postPlayerAudioMessage({ type: "pocket-pixel:audio-unlock" });
+  return Promise.resolve();
 }
 
 function setPlayerMuted(muted) {
   audioMuted = Boolean(muted);
+  updateAudioIndicator();
   const api = playerAudioApi();
   if (api?.setMuted) {
-    api.setMuted(audioMuted);
-  } else {
-    postPlayerAudioMessage({ type: "pocket-pixel:audio-muted", muted: audioMuted });
+    return api.setMuted(audioMuted);
   }
+
+  postPlayerAudioMessage({ type: "pocket-pixel:audio-muted", muted: audioMuted });
+  return Promise.resolve(audioMuted);
 }
 
 function togglePlayerMuted() {
-  setPlayerMuted(!audioMuted);
+  return setPlayerMuted(!audioMuted);
+}
+
+function updateAudioIndicator() {
+  const button = document.querySelector(".audio-toggle");
+  if (!button) return;
+
+  button.classList.toggle("is-muted", audioMuted);
+  button.setAttribute("aria-pressed", String(audioMuted));
+  button.setAttribute("aria-label", audioMuted ? "Unmute audio" : "Mute audio");
 }
 
 function dispatchKeyToTargets(type, logicalKey, targets) {
@@ -211,9 +234,9 @@ function setupControls() {
   document.querySelectorAll("[data-key]").forEach((control) => {
     buttons.set(control.dataset.key, control);
 
-    control.addEventListener("pointerdown", (event) => {
+    control.addEventListener("pointerdown", async (event) => {
       event.preventDefault();
-      unlockPlayerAudio();
+      await unlockPlayerAudio();
       control.setPointerCapture(event.pointerId);
       pointerKeys.set(event.pointerId, control.dataset.key);
       pressKey(control.dataset.key);
@@ -244,17 +267,17 @@ function setupControls() {
     control.addEventListener("pointercancel", stop);
   });
 
-  window.addEventListener("keydown", (event) => {
+  window.addEventListener("keydown", async (event) => {
     if (event.key.toLowerCase() === "m") {
       event.preventDefault();
-      togglePlayerMuted();
+      await togglePlayerMuted();
       return;
     }
 
     const logicalKey = keyboardAliases.get(event.key);
     if (!logicalKey) return;
     event.preventDefault();
-    unlockPlayerAudio();
+    await unlockPlayerAudio();
     setButtonState(logicalKey, true);
     if (event.isTrusted) {
       dispatchFrameKey("keydown", logicalKey);
@@ -272,6 +295,25 @@ function setupControls() {
       dispatchFrameKey("keyup", logicalKey);
     }
   });
+}
+
+function setupAudioControl() {
+  const button = document.querySelector(".audio-toggle");
+  if (!button) return;
+
+  updateAudioIndicator();
+  button.addEventListener("click", async (event) => {
+    event.preventDefault();
+    await togglePlayerMuted();
+  });
+}
+
+function setupResponsiveDevice() {
+  updateDeviceScale();
+  window.addEventListener("resize", updateDeviceScale);
+  if (window.ResizeObserver) {
+    new ResizeObserver(updateDeviceScale).observe(document.querySelector(".device"));
+  }
 }
 
 function reflectKeyboardEvent(event, pressed) {
@@ -295,3 +337,5 @@ function attachFrameKeyboardListeners() {
 renderLogo();
 setupPlayer();
 setupControls();
+setupAudioControl();
+setupResponsiveDevice();

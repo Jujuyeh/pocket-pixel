@@ -47,6 +47,15 @@ a {
   padding: clamp(12px, 4vw, 34px);
 }
 
+.device-shell {
+  --device-scale: 1;
+  --device-height: 690px;
+  width: min(100%, 520px);
+  height: calc(var(--device-height) * var(--device-scale));
+  display: grid;
+  justify-items: center;
+}
+
 .page-title {
   display: grid;
   justify-items: center;
@@ -134,7 +143,7 @@ a {
 
 .device {
   position: relative;
-  width: min(100%, 520px);
+  width: 520px;
   display: grid;
   grid-template-rows: auto 240px;
   gap: 52px;
@@ -145,6 +154,8 @@ a {
     linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 42%),
     var(--panel);
   box-shadow: 0 18px 0 var(--panel-deep), 0 26px 34px var(--shadow);
+  transform: scale(var(--device-scale));
+  transform-origin: top center;
 }
 
 .device::after {
@@ -339,10 +350,10 @@ a {
 
 .leds {
   position: absolute;
-  left: 18px;
+  left: 20px;
   bottom: 23px;
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .led {
@@ -364,6 +375,54 @@ a {
 
 .led-blue.active {
   background: #3c79ff;
+}
+
+.audio-toggle {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 34px;
+  height: 26px;
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  background: rgba(247, 243, 231, 0.55);
+  cursor: pointer;
+  touch-action: none;
+}
+
+.audio-toggle::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  width: 7px;
+  height: 10px;
+  background: var(--line);
+  clip-path: polygon(0 25%, 45% 25%, 100% 0, 100% 100%, 45% 75%, 0 75%);
+}
+
+.audio-toggle::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  top: 7px;
+  width: 8px;
+  height: 12px;
+  border: 2px solid var(--line);
+  border-left: 0;
+  border-radius: 0 9px 9px 0;
+}
+
+.audio-toggle.is-muted::after {
+  right: 9px;
+  top: 5px;
+  width: 12px;
+  height: 16px;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(45deg, transparent 43%, var(--line) 43% 57%, transparent 57%),
+    linear-gradient(-45deg, transparent 43%, var(--line) 43% 57%, transparent 57%);
 }
 
 .desktop-actions {
@@ -483,84 +542,6 @@ a {
     align-content: start;
     gap: 16px;
     padding-top: 8px;
-  }
-
-  .device {
-    aspect-ratio: auto;
-    min-height: 0;
-    grid-template-rows: auto auto;
-    gap: 28px;
-  }
-
-  .controls {
-    grid-template-columns: 1fr 48px 1fr;
-    align-self: end;
-    gap: 10px;
-  }
-
-  .dpad {
-    width: 150px;
-    height: 150px;
-    transform: translateX(5px);
-  }
-
-  .dpad::before {
-    inset: 10px;
-  }
-
-  .pad {
-    --shape: path("M 6 0 H 42 Q 48 0 48 6 V 42 Q 48 48 42 48 H 6 Q 0 48 0 42 V 6 Q 0 0 6 0 Z");
-    width: 48px;
-    height: 48px;
-  }
-
-  .pad.up,
-  .pad.down {
-    left: 51px;
-    height: 76px;
-  }
-
-  .pad.left,
-  .pad.right {
-    top: 51px;
-    width: 76px;
-  }
-
-  .pad.up {
-    --shape: path("M 6 0 H 42 Q 48 0 48 6 V 45 Q 48 49 45 52 L 27 74 Q 24 76 21 74 L 3 52 Q 0 49 0 45 V 6 Q 0 0 6 0 Z");
-    top: 0;
-  }
-
-  .pad.down {
-    --shape: path("M 21 2 Q 24 0 27 2 L 45 24 Q 48 27 48 31 V 70 Q 48 76 42 76 H 6 Q 0 76 0 70 V 31 Q 0 27 3 24 Z");
-    bottom: 0;
-  }
-
-  .pad.left {
-    --shape: path("M 6 0 H 45 Q 49 0 52 3 L 74 21 Q 76 24 74 27 L 52 45 Q 49 48 45 48 H 6 Q 0 48 0 42 V 6 Q 0 0 6 0 Z");
-    left: 0;
-  }
-
-  .pad.right {
-    --shape: path("M 70 0 H 31 Q 27 0 24 3 L 2 21 Q 0 24 2 27 L 24 45 Q 27 48 31 48 H 70 Q 76 48 76 42 V 6 Q 76 0 70 0 Z");
-    right: 0;
-  }
-
-  .face-buttons {
-    gap: 14px;
-    transform: translateX(-4px);
-  }
-
-  .face-buttons::before {
-    top: 30px;
-    height: 80px;
-    transform: rotate(-18deg) scale(1);
-  }
-
-  .face {
-    width: 62px;
-    height: 62px;
-    font-size: 24px;
   }
 
   .desktop-actions,
