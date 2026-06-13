@@ -125,6 +125,25 @@ Prepare a catalog entry for later merge into an FX flashcart:
 make fx-entry
 ```
 
+## Web Player
+
+The GitHub Pages build serves `site/`, a custom Arduboy shell around the Ardens
+web player. Keyboard controls are:
+
+- Arrow keys: D-pad.
+- `Z` or `A`: Arduboy A button.
+- `X`, `S`, or `B`: Arduboy B button.
+- `M`: mute or unmute audio.
+
+The on-screen controls also forward input to the embedded player. Browsers
+block WebAudio autoplay until the user interacts with the page, so the first
+keyboard press, on-screen button press, or mute toggle is used to unlock audio.
+
+The shell includes decorative red/blue LED lenses. Ardens emulates Arduboy LEDs
+internally, but the current `ArdensPlayer` web build does not expose LED state
+to embedding pages, so the shell cannot mirror `digitalWriteRGB()` yet. Upstream
+feature request: https://github.com/tiberiusbrown/Ardens/issues/147.
+
 ## Releases
 
 GitHub Actions builds the stable HEX, debug HEX, and Arduboy FX catalog entry on

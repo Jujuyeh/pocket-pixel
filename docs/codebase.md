@@ -334,6 +334,19 @@ Local commands:
 - `make libretro`: runs the stable build with RetroArch and Ardens.
 - `make libretro-debug`: runs the debug build.
 
+Web player notes:
+
+- `site/index.html` draws the custom Pocket Pixel web shell and controller.
+- `site/player.html` wraps ArdensPlayer and loads the generated HEX.
+- `site/app.js` forwards keyboard and pointer input into the iframe.
+- Audio mute state is handled by the wrapper. Browsers still require a user
+  gesture before WebAudio can play, so the first key/button interaction is used
+  to unlock audio.
+- The shell draws red/blue LED lenses, but the current ArdensPlayer web build
+  does not expose emulated LED state to JavaScript. The LEDs are therefore
+  decorative until upstream exposes `led_rgb()` or an equivalent callback.
+  Tracking issue: https://github.com/tiberiusbrown/Ardens/issues/147.
+
 GitHub Actions workflow:
 
 ```text
