@@ -43,27 +43,17 @@
         context() {
           return Module._saudio_context || null;
         },
-        async unlock(forcePulse = false) {
+        async unlock() {
           this.unlockRequested = true;
           const context = this.context();
           if (!context || this.muted) return;
           try {
             if (context.state === "suspended") {
               await context.resume();
-            } else if (forcePulse) {
-              await context.suspend();
-              await context.resume();
             }
           } catch (_) {
             // Browsers only allow audio resume during trusted user gestures.
           }
-        },
-        async prime() {
-          this.unlockRequested = true;
-          const wasMuted = this.muted;
-          this.setMuted(true);
-          if (wasMuted) return true;
-          return this.setMuted(false);
         },
         async setMuted(muted) {
           this.muted = Boolean(muted);
@@ -89,29 +79,17 @@
 
       window.PocketPixelAudio = PocketPixelAudio;
 
-      window.setInterval(() => {
-        const context = PocketPixelAudio.context();
-        if (!context) return;
-        if (PocketPixelAudio.muted && context.state !== "suspended") {
-          PocketPixelAudio.setMuted(true);
-        } else if (PocketPixelAudio.unlockRequested && !PocketPixelAudio.muted) {
-          PocketPixelAudio.unlock();
-        }
-      }, 250);
-
       window.addEventListener("message", (event) => {
         if (event.origin !== window.location.origin) return;
         if (event.data?.type === "pocket-pixel:audio-unlock") {
           PocketPixelAudio.unlock();
-        } else if (event.data?.type === "pocket-pixel:audio-prime") {
-          PocketPixelAudio.prime();
         } else if (event.data?.type === "pocket-pixel:audio-muted") {
           PocketPixelAudio.setMuted(event.data.muted);
         }
       });
 
       window.addEventListener("keydown", (event) => {
-        PocketPixelAudio.prime();
+        PocketPixelAudio.unlock();
         if (event.key.toLowerCase() === "m") {
           event.preventDefault();
           PocketPixelAudio.toggleMuted();
@@ -159,9 +137,6 @@
           fetchGameFile(value)
             .then((buffer) => loadFile(param, value, new Uint8Array(buffer)));
         }
-        window.setTimeout(() => {
-          PocketPixelAudio.setMuted(true).then(() => PocketPixelAudio.setMuted(false));
-        }, 500);
       };
     </script>
     <script src="vendor/ardens/ArdensPlayer.js"></script>

@@ -340,8 +340,8 @@ Web player notes:
 - `site/player.html` wraps ArdensPlayer and loads the generated HEX.
 - `site/app.js` forwards keyboard and pointer input into the iframe.
 - Audio mute state is handled by the wrapper. Browsers still require a user
-  gesture before WebAudio can play, so the first key/button interaction is used
-  to unlock audio.
+  gesture before WebAudio can play. Avoid repeated suspend/resume workarounds
+  because they can degrade playback on mobile browsers.
 - The shell draws red/blue LED lenses, but the current ArdensPlayer web build
   does not expose emulated LED state to JavaScript. The LEDs are therefore
   decorative until upstream exposes `led_rgb()` or an equivalent callback.

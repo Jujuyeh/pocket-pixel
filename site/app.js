@@ -155,14 +155,11 @@ function postPlayerAudioMessage(message) {
 
 function unlockPlayerAudio() {
   const api = playerAudioApi();
-  if (api?.prime) {
-    return api.prime();
-  }
   if (api?.unlock) {
-    return api.unlock(true);
+    return api.unlock();
   }
 
-  postPlayerAudioMessage({ type: "pocket-pixel:audio-prime" });
+  postPlayerAudioMessage({ type: "pocket-pixel:audio-unlock" });
   return Promise.resolve();
 }
 

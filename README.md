@@ -136,8 +136,9 @@ web player. Keyboard controls are:
 - `M`: mute or unmute audio.
 
 The on-screen controls also forward input to the embedded player. Browsers
-block WebAudio autoplay until the user interacts with the page, so the first
-keyboard press, on-screen button press, or mute toggle is used to unlock audio.
+block WebAudio autoplay until the user interacts with the page. If audio is
+silent after loading, click or tap the game screen or one of the on-screen
+controls once.
 
 The shell includes decorative red/blue LED lenses. Ardens emulates Arduboy LEDs
 internally, but the current `ArdensPlayer` web build does not expose LED state
