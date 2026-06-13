@@ -291,34 +291,34 @@ a {
 
 .pad.up,
 .pad.down {
-  left: 55px;
+  left: 66px;
   height: 82px;
 }
 
 .pad.up {
   --shape: polygon(0 0, 100% 0, 100% 82%, 50% 100%, 0 82%);
-  top: 4px;
+  top: 0;
 }
 
 .pad.down {
   --shape: polygon(0 18%, 50% 0, 100% 18%, 100% 100%, 0 100%);
-  bottom: 4px;
+  bottom: 0;
 }
 
 .pad.left,
 .pad.right {
-  top: 55px;
+  top: 66px;
   width: 82px;
 }
 
 .pad.left {
   --shape: polygon(0 0, 82% 0, 100% 50%, 82% 100%, 0 100%);
-  left: 4px;
+  left: 0;
 }
 
 .pad.right {
   --shape: polygon(18% 0, 100% 0, 100% 100%, 18% 100%, 0 50%);
-  right: 4px;
+  right: 0;
 }
 
 .pad-center {
@@ -513,30 +513,30 @@ a {
 
   .pad.up,
   .pad.down {
-    left: 43px;
+    left: 51px;
     height: 64px;
   }
 
   .pad.left,
   .pad.right {
-    top: 43px;
+    top: 51px;
     width: 64px;
   }
 
   .pad.up {
-    top: 2px;
+    top: 0;
   }
 
   .pad.down {
-    bottom: 2px;
+    bottom: 0;
   }
 
   .pad.left {
-    left: 2px;
+    left: 0;
   }
 
   .pad.right {
-    right: 2px;
+    right: 0;
   }
 
   .face-buttons {
