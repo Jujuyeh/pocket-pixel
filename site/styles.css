@@ -152,7 +152,7 @@ a {
   content: "";
   position: absolute;
   left: 50%;
-  bottom: -21px;
+  bottom: -19px;
   width: 62px;
   height: 15px;
   transform: translateX(-50%);
@@ -246,7 +246,6 @@ a {
   background: rgba(42, 36, 29, 0.42);
 }
 
-.pad,
 .face {
   appearance: none;
   border: 3px solid var(--line);
@@ -257,44 +256,106 @@ a {
 }
 
 .pad {
+  appearance: none;
   position: absolute;
   width: 58px;
   height: 58px;
   z-index: 1;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  touch-action: none;
+  transition: box-shadow 80ms ease, filter 80ms ease, transform 80ms ease;
+}
+
+.pad::before,
+.pad::after {
+  content: "";
+  position: absolute;
+  background: #29231d;
+  border: 3px solid var(--line);
+  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.28), 0 4px 0 var(--shadow);
+}
+
+.pad::before {
+  z-index: 1;
+}
+
+.pad::after {
+  z-index: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  transform: rotate(45deg);
 }
 
 .pad.up,
 .pad.down {
   left: 55px;
+  height: 70px;
 }
 
 .pad.up {
-  top: 8px;
-  border-radius: 7px;
-  clip-path: polygon(0 0, 100% 0, 100% 77%, 50% 100%, 0 77%);
+  top: 6px;
+}
+
+.pad.up::before {
+  inset: 0 0 14px;
+  border-radius: 8px 8px 13px 13px;
+}
+
+.pad.up::after {
+  left: 16px;
+  bottom: 4px;
 }
 
 .pad.down {
-  bottom: 8px;
-  border-radius: 7px;
-  clip-path: polygon(0 23%, 50% 0, 100% 23%, 100% 100%, 0 100%);
+  bottom: 6px;
+}
+
+.pad.down::before {
+  inset: 14px 0 0;
+  border-radius: 13px 13px 8px 8px;
+}
+
+.pad.down::after {
+  left: 16px;
+  top: 4px;
 }
 
 .pad.left,
 .pad.right {
   top: 55px;
+  width: 70px;
 }
 
 .pad.left {
-  left: 8px;
-  border-radius: 7px;
-  clip-path: polygon(0 0, 77% 0, 100% 50%, 77% 100%, 0 100%);
+  left: 6px;
+}
+
+.pad.left::before {
+  inset: 0 14px 0 0;
+  border-radius: 8px 13px 13px 8px;
+}
+
+.pad.left::after {
+  right: 4px;
+  top: 16px;
 }
 
 .pad.right {
-  right: 8px;
-  border-radius: 7px;
-  clip-path: polygon(23% 0, 100% 0, 100% 100%, 23% 100%, 0 50%);
+  right: 6px;
+}
+
+.pad.right::before {
+  inset: 0 0 0 14px;
+  border-radius: 13px 8px 8px 13px;
+}
+
+.pad.right::after {
+  left: 4px;
+  top: 16px;
 }
 
 .pad-center {
@@ -437,10 +498,19 @@ a {
   --active-y: -11px;
 }
 
-.pad.is-active,
 .face.is-active {
   transform: translateY(var(--active-y));
   box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.3), 0 1px 0 var(--shadow);
+}
+
+.pad.is-active {
+  transform: translateY(4px) scale(0.96);
+  filter: brightness(1.18);
+}
+
+.pad.is-active::before,
+.pad.is-active::after {
+  box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.34), 0 1px 0 var(--shadow);
 }
 
 @media (max-width: 760px) {
@@ -475,30 +545,78 @@ a {
     height: 42px;
   }
 
+  .pad::after {
+    width: 19px;
+    height: 19px;
+    border-radius: 7px;
+  }
+
   .pad.up,
   .pad.down {
     left: 41px;
+    height: 54px;
   }
 
   .pad.left,
   .pad.right {
     top: 41px;
+    width: 54px;
   }
 
   .pad.up {
-    top: 6px;
+    top: 5px;
   }
 
   .pad.down {
-    bottom: 6px;
+    bottom: 5px;
   }
 
   .pad.left {
-    left: 6px;
+    left: 5px;
   }
 
   .pad.right {
-    right: 6px;
+    right: 5px;
+  }
+
+  .pad.up::before {
+    inset: 0 0 10px;
+    border-radius: 7px 7px 10px 10px;
+  }
+
+  .pad.up::after {
+    left: 10px;
+    bottom: 3px;
+  }
+
+  .pad.down::before {
+    inset: 10px 0 0;
+    border-radius: 10px 10px 7px 7px;
+  }
+
+  .pad.down::after {
+    left: 10px;
+    top: 3px;
+  }
+
+  .pad.left::before {
+    inset: 0 10px 0 0;
+    border-radius: 7px 10px 10px 7px;
+  }
+
+  .pad.left::after {
+    right: 3px;
+    top: 10px;
+  }
+
+  .pad.right::before {
+    inset: 0 0 0 10px;
+    border-radius: 10px 7px 7px 10px;
+  }
+
+  .pad.right::after {
+    left: 3px;
+    top: 10px;
   }
 
   .face-buttons {
