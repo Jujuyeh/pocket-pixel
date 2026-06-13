@@ -193,7 +193,7 @@ Invalid save data resets to the default recovered state:
 - full life,
 - level 0,
 - one tenth of the XP bar filled,
-- 100 money,
+- 1000 money,
 - no active status flags.
 
 ## Known Technical Notes
