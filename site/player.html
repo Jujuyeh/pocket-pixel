@@ -37,6 +37,59 @@
 
       Module.canvas.addEventListener("click", () => Module.canvas.focus());
 
+      const PocketPixelAudio = {
+        muted: false,
+        context() {
+          return Module._saudio_context || null;
+        },
+        async unlock() {
+          const context = this.context();
+          if (!context || this.muted || context.state !== "suspended") return;
+          try {
+            await context.resume();
+          } catch (_) {
+            // Browsers only allow audio resume during trusted user gestures.
+          }
+        },
+        async setMuted(muted) {
+          this.muted = Boolean(muted);
+          const context = this.context();
+          if (!context) return this.muted;
+
+          try {
+            if (this.muted && context.state !== "suspended") {
+              await context.suspend();
+            } else if (!this.muted && context.state === "suspended") {
+              await context.resume();
+            }
+          } catch (_) {
+            // Keep the desired state; the next trusted interaction can apply it.
+          }
+
+          return this.muted;
+        },
+        toggleMuted() {
+          return this.setMuted(!this.muted);
+        }
+      };
+
+      window.PocketPixelAudio = PocketPixelAudio;
+
+      window.addEventListener("message", (event) => {
+        if (event.origin !== window.location.origin) return;
+        if (event.data?.type === "pocket-pixel:audio-unlock") {
+          PocketPixelAudio.unlock();
+        } else if (event.data?.type === "pocket-pixel:audio-muted") {
+          PocketPixelAudio.setMuted(event.data.muted);
+        }
+      });
+
+      window.addEventListener("keydown", (event) => {
+        if (event.key.toLowerCase() !== "m") return;
+        event.preventDefault();
+        PocketPixelAudio.toggleMuted();
+      });
+
       function loadFile(param, fname, fdata) {
         const ptr = Module._malloc(fdata.length);
         Module.HEAPU8.set(fdata, ptr);

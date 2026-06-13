@@ -37,6 +37,7 @@ const keyboardAliases = new Map([
 const activeKeys = new Set();
 const pointerKeys = new Map();
 const buttons = new Map();
+let audioMuted = false;
 
 function renderLogo() {
   const logo = document.querySelector("#jujuyeh-logo");
@@ -69,7 +70,10 @@ function setupPlayer() {
 
   player.src = playerUrl.href;
   hexLink.href = rom;
-  player.addEventListener("load", attachFrameKeyboardListeners);
+  player.addEventListener("load", () => {
+    attachFrameKeyboardListeners();
+    setPlayerMuted(audioMuted);
+  });
 }
 
 function eventTargets() {
@@ -115,6 +119,47 @@ function focusPlayerCanvas() {
   } catch (_) {
     // Same-origin Pages builds can focus the canvas. Cross-origin previews cannot.
   }
+}
+
+function playerAudioApi() {
+  const iframe = document.querySelector("#player");
+  try {
+    return iframe.contentWindow?.PocketPixelAudio;
+  } catch (_) {
+    return null;
+  }
+}
+
+function postPlayerAudioMessage(message) {
+  const iframe = document.querySelector("#player");
+  try {
+    iframe.contentWindow?.postMessage(message, window.location.origin);
+  } catch (_) {
+    // Cross-origin previews cannot receive direct postMessage control.
+  }
+}
+
+function unlockPlayerAudio() {
+  const api = playerAudioApi();
+  if (api?.unlock) {
+    api.unlock();
+  } else {
+    postPlayerAudioMessage({ type: "pocket-pixel:audio-unlock" });
+  }
+}
+
+function setPlayerMuted(muted) {
+  audioMuted = Boolean(muted);
+  const api = playerAudioApi();
+  if (api?.setMuted) {
+    api.setMuted(audioMuted);
+  } else {
+    postPlayerAudioMessage({ type: "pocket-pixel:audio-muted", muted: audioMuted });
+  }
+}
+
+function togglePlayerMuted() {
+  setPlayerMuted(!audioMuted);
 }
 
 function dispatchKeyToTargets(type, logicalKey, targets) {
@@ -168,6 +213,7 @@ function setupControls() {
 
     control.addEventListener("pointerdown", (event) => {
       event.preventDefault();
+      unlockPlayerAudio();
       control.setPointerCapture(event.pointerId);
       pointerKeys.set(event.pointerId, control.dataset.key);
       pressKey(control.dataset.key);
@@ -199,9 +245,16 @@ function setupControls() {
   });
 
   window.addEventListener("keydown", (event) => {
+    if (event.key.toLowerCase() === "m") {
+      event.preventDefault();
+      togglePlayerMuted();
+      return;
+    }
+
     const logicalKey = keyboardAliases.get(event.key);
     if (!logicalKey) return;
     event.preventDefault();
+    unlockPlayerAudio();
     setButtonState(logicalKey, true);
     if (event.isTrusted) {
       dispatchFrameKey("keydown", logicalKey);

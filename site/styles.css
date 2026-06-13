@@ -228,6 +228,7 @@ a {
   align-items: start;
   justify-items: center;
   gap: 10px;
+  transform: translateY(6px);
 }
 
 .dpad {
