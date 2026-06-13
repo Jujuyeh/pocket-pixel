@@ -105,6 +105,17 @@ Open Arduboy Cloud to test the generated hex with Ardens:
 make cloud
 ```
 
+Prepare the static web player used by GitHub Pages:
+
+```sh
+make web-site
+```
+
+This compiles the stable HEX, copies it to `site/build/`, and fetches the
+Ardens web player files into `site/vendor/ardens/` for the local Pages preview
+or CI artifact. The fetched Ardens binaries are generated files and are not
+tracked in git.
+
 The project defaults to an Arduboy FX-safe workflow. `make upload` refuses to
 overwrite the sketch when `TARGET=fx`. See `docs/fx-workflow.md`.
 
@@ -114,10 +125,31 @@ Prepare a catalog entry for later merge into an FX flashcart:
 make fx-entry
 ```
 
+## Web Player
+
+The GitHub Pages build serves `site/`, a custom Arduboy shell around the Ardens
+web player. Keyboard controls are:
+
+- Arrow keys: D-pad.
+- `Z` or `A`: Arduboy A button.
+- `X`, `S`, or `B`: Arduboy B button.
+- `M`: mute or unmute audio.
+
+The on-screen controls also forward input to the embedded player. Browsers
+block WebAudio autoplay until the user interacts with the page. If audio is
+silent after loading, click or tap the game screen or one of the on-screen
+controls once.
+
+The shell includes decorative red/blue LED lenses. Ardens emulates Arduboy LEDs
+internally, but the current `ArdensPlayer` web build does not expose LED state
+to embedding pages, so the shell cannot mirror `digitalWriteRGB()` yet. Upstream
+feature request: https://github.com/tiberiusbrown/Ardens/issues/147.
+
 ## Releases
 
 GitHub Actions builds the stable HEX, debug HEX, and Arduboy FX catalog entry on
-pushes and pull requests.
+pushes and pull requests. Pushes to `main` and version tags also publish the
+GitHub Pages web player.
 
 Create a public GitHub Release by pushing a version tag:
 
@@ -179,6 +211,7 @@ pocket-pixel/
 |   `-- sprite-guidelines.md      Sprite workflow and pixel-art handoff
 |-- profiles/
 |   `-- pixel.json                Active pet personality source profile
+|-- site/                         GitHub Pages web player shell
 |-- skills/                       Project-local agent workflows and scripts
 |-- src/
 |   |-- Assets.*                  Sprites, bitmap data, and tone sequences

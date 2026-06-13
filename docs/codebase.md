@@ -330,8 +330,22 @@ Local commands:
 - `make compile`: builds the stable HEX.
 - `make compile-debug`: builds the debug HEX.
 - `make fx-entry`: prepares `dist/fx-cart/...` with HEX and FX banner.
+- `make web-site`: prepares the static GitHub Pages player under `site/`.
 - `make libretro`: runs the stable build with RetroArch and Ardens.
 - `make libretro-debug`: runs the debug build.
+
+Web player notes:
+
+- `site/index.html` draws the custom Pocket Pixel web shell and controller.
+- `site/player.html` wraps ArdensPlayer and loads the generated HEX.
+- `site/app.js` forwards keyboard and pointer input into the iframe.
+- Audio mute state is handled by the wrapper. Browsers still require a user
+  gesture before WebAudio can play. Avoid repeated suspend/resume workarounds
+  because they can degrade playback on mobile browsers.
+- The shell draws red/blue LED lenses, but the current ArdensPlayer web build
+  does not expose emulated LED state to JavaScript. The LEDs are therefore
+  decorative until upstream exposes `led_rgb()` or an equivalent callback.
+  Tracking issue: https://github.com/tiberiusbrown/Ardens/issues/147.
 
 GitHub Actions workflow:
 
@@ -349,6 +363,13 @@ On push and pull request:
 - Compiles stable and debug builds.
 - Prepares FX catalog entry.
 - Uploads workflow artifacts.
+
+On pushes to `main` and version tags:
+
+- Prepares the static Pages site.
+- Copies the stable HEX to `site/build/pocket-pixel-latest.hex`.
+- Downloads Ardens web player files into the Pages artifact.
+- Deploys GitHub Pages.
 
 On tags matching `v*`:
 

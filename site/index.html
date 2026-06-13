@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Pocket Pixel</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="stage">
+      <header class="page-title">
+        <div class="cartridge" aria-hidden="true">
+          <div class="cart-grooves"></div>
+          <img src="build/banner.png" alt="">
+          <div class="cart-contacts"></div>
+        </div>
+        <h1>POCKET PIXEL</h1>
+        <p>FOR ARDUBOY</p>
+      </header>
+
+      <div class="device-shell">
+        <section class="device" aria-label="Pocket Pixel web player">
+          <div class="bezel">
+            <div class="screen">
+              <iframe
+                id="player"
+                title="Pocket Pixel running in Ardens"
+                tabindex="0"
+                allow="autoplay; fullscreen"
+                src="about:blank"></iframe>
+            </div>
+            <div class="bezel-brand">
+              <div class="leds" aria-hidden="true">
+                <span class="led led-red"></span>
+                <span class="led led-blue"></span>
+              </div>
+              <div class="pixel-logo" id="jujuyeh-logo" aria-label="Jujuyeh"></div>
+            </div>
+          </div>
+
+          <div class="controls" aria-label="Arduboy controls">
+            <div class="dpad" aria-label="Directional pad">
+              <button class="pad up" data-key="ArrowUp" aria-label="Up"></button>
+              <button class="pad left" data-key="ArrowLeft" aria-label="Left"></button>
+              <button class="pad right" data-key="ArrowRight" aria-label="Right"></button>
+              <button class="pad down" data-key="ArrowDown" aria-label="Down"></button>
+              <div class="pad-center" aria-hidden="true"></div>
+            </div>
+
+            <div class="system-strip" aria-hidden="true"></div>
+
+            <div class="face-buttons" aria-label="Action buttons">
+              <button class="face face-a" data-key="z" aria-label="A"><span>A</span></button>
+              <button class="face face-b" data-key="x" aria-label="B"><span>B</span></button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <nav class="desktop-actions" aria-label="Project links">
+        <a class="utility-link" href="https://www.arduboy.com/">ARDUBOY</a>
+        <a class="utility-link" id="hex-link" href="build/pocket-pixel-latest.hex">HEX</a>
+        <a class="utility-link" href="https://github.com/Jujuyeh/pocket-pixel">GITHUB</a>
+      </nav>
+
+      <aside class="keyboard-legend" aria-label="Keyboard controls">
+        <span>ARROWS D-PAD</span>
+        <span>Z / A = A</span>
+        <span>X / S / B = B</span>
+        <span>M = MUTE</span>
+      </aside>
+
+      <button class="audio-toggle" type="button" aria-label="Mute audio" aria-pressed="false"></button>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

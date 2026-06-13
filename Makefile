@@ -30,6 +30,7 @@ SPRITE_TOOL ?= $(SKETCH_DIR)/tools/pet-studio/sprite_tool.py
 SPRITES_JSON ?= $(SKETCH_DIR)/build/pet-studio/assets.json
 AUDIO_TOOL ?= $(SKETCH_DIR)/tools/pet-studio/audio_tool.py
 AUDIO_JSON ?= $(SKETCH_DIR)/build/pet-studio/audio.json
+WEB_SITE_SCRIPT ?= $(SKETCH_DIR)/tools/prepare-web-site.sh
 
 ifeq ($(BUILD),debug)
 ARDUINO_BUILD_FLAGS := --build-property compiler.cpp.extra_flags="-DPOCKET_PIXEL_DEBUG=1"
@@ -42,7 +43,7 @@ endif
 export ARDUINO_DIRECTORIES_DATA := $(ARDUINO_DATA_DIR)
 export ARDUINO_DIRECTORIES_USER := $(SKETCH_DIR)/.arduino-sketchbook
 
-.PHONY: all setup compile compile-debug profile-header upload upload-sketch clean hex size size-debug symbols symbols-debug pet-studio asset-studio sprite-studio sprites-json audio-json check env sim cloud libretro libretro-debug fx-entry
+.PHONY: all setup compile compile-debug profile-header upload upload-sketch clean hex size size-debug symbols symbols-debug pet-studio asset-studio sprite-studio sprites-json audio-json check env sim cloud libretro libretro-debug fx-entry web-site
 
 all: compile
 
@@ -138,6 +139,9 @@ fx-entry: compile
 	@printf '%s\n' "$(FX_CART_DIR)/$(FX_CATEGORY)/$(FX_GAME).png"
 	@printf '%s\n' "Banner: $(FX_BANNER)"
 	@printf '%s\n' "Merge this into a backup of your existing FX cart before writing."
+
+web-site: compile
+	$(WEB_SITE_SCRIPT) "$(HEX)"
 
 check: compile
 
