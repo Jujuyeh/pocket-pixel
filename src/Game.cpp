@@ -11,8 +11,8 @@
 #include <Tinyfont.h>
 #include <ArduboyTones.h>
  
-Arduboy2 arduboy;
-Tinyfont tinyfont = Tinyfont(arduboy.sBuffer, Arduboy2::width(), Arduboy2::height());
+Arduboy2Base arduboy;
+Tinyfont tinyfont = Tinyfont(arduboy.sBuffer, Arduboy2Base::width(), Arduboy2Base::height());
 ArduboyTones sound(arduboy.audio.enabled);
 uint16_t frameCounter = 0;
 
@@ -400,7 +400,7 @@ uint8_t cleanBrushY() {
     return cleanGame.cursorY;
 }
 
-void drawRoundedLitterFrame(Arduboy2 &display) {
+void drawRoundedLitterFrame(Arduboy2Base &display) {
     display.drawFastHLine(LITTER_X + 1, LITTER_Y, LITTER_W - 2, BLACK);
     display.drawFastHLine(LITTER_X + 1, LITTER_Y + LITTER_H - 1, LITTER_W - 2, BLACK);
     display.drawFastVLine(LITTER_X, LITTER_Y + 1, LITTER_H - 2, BLACK);
@@ -408,14 +408,14 @@ void drawRoundedLitterFrame(Arduboy2 &display) {
 }
 
 // Draw one deterministic sand speck when its hash passes the density threshold.
-void drawSandPoint(Arduboy2 &display, uint8_t x, uint8_t y, uint8_t salt) {
+void drawSandPoint(Arduboy2Base &display, uint8_t x, uint8_t y, uint8_t salt) {
     if (sandHash(x / 3, y / 3, salt) % 5 < 2) {
         display.drawPixel(x, y, BLACK);
     }
 }
 
 // Initial litter texture is procedural so it costs no persistent framebuffer.
-void drawBaseSand(Arduboy2 &display) {
+void drawBaseSand(Arduboy2Base &display) {
     for (uint8_t y = LITTER_Y + 3; y < LITTER_Y + LITTER_H - 3; y += 3) {
         for (uint8_t x = LITTER_X + 3; x < LITTER_X + LITTER_W - 3; x += 4) {
             uint8_t px = x + (sandHash(x, y, 1) % 3);
@@ -426,7 +426,7 @@ void drawBaseSand(Arduboy2 &display) {
 }
 
 // Raking repaints a small local patch with new sparse sand dots.
-void drawRakedSandDot(Arduboy2 &display, uint8_t brushX, uint8_t brushY, uint8_t index) {
+void drawRakedSandDot(Arduboy2Base &display, uint8_t brushX, uint8_t brushY, uint8_t index) {
     int8_t x = (int8_t) (sandHash(brushX + index * 3, brushY, index) % 7) - 5;
     int8_t y = (int8_t) (sandHash(brushY + index * 5, brushX, index + 11) % 9) - 4;
     uint8_t px = brushX + x;
@@ -439,7 +439,7 @@ void drawRakedSandDot(Arduboy2 &display, uint8_t brushX, uint8_t brushY, uint8_t
 }
 
 // White-out then re-dot the brush footprint so the rake visibly moves sand.
-void drawRakedSandInBrush(Arduboy2 &display, uint8_t brushX, uint8_t brushY) {
+void drawRakedSandInBrush(Arduboy2Base &display, uint8_t brushX, uint8_t brushY) {
     for (int8_t y = CLEAN_BRUSH_TOP; y <= CLEAN_BRUSH_BOTTOM; y++) {
         for (int8_t x = CLEAN_BRUSH_LEFT; x <= CLEAN_BRUSH_RIGHT; x++) {
             uint8_t px = brushX + x;
@@ -462,7 +462,7 @@ bool shapeBit(uint8_t shape, uint8_t row, uint8_t col) {
 }
 
 // Draw a single poop shape pixel in screen coordinates.
-void drawPoopPixel(Arduboy2 &display, PoopPatch &poop, uint8_t row, uint8_t col, uint8_t color) {
+void drawPoopPixel(Arduboy2Base &display, PoopPatch &poop, uint8_t row, uint8_t col, uint8_t color) {
     if (shapeBit(poop.shape, row, col)) {
         display.drawPixel(poop.x + col, poop.y + row, color);
     }
@@ -477,7 +477,7 @@ bool visiblePoopPixel(const PoopPatch &poop, uint8_t row, uint8_t col) {
 }
 
 // White outline improves readability when poop patches overlap.
-void drawPoopBorderPixel(Arduboy2 &display, const PoopPatch &poop, int8_t row, int8_t col) {
+void drawPoopBorderPixel(Arduboy2Base &display, const PoopPatch &poop, int8_t row, int8_t col) {
     int16_t x = poop.x + col;
     int16_t y = poop.y + row;
     if (x <= LITTER_X || x >= LITTER_X + LITTER_W - 1 || y <= LITTER_Y || y >= LITTER_Y + LITTER_H - 1) {
@@ -487,7 +487,7 @@ void drawPoopBorderPixel(Arduboy2 &display, const PoopPatch &poop, int8_t row, i
 }
 
 // Draw borders first so the black poop body can sit on top.
-void drawVisiblePoopBorders(Arduboy2 &display) {
+void drawVisiblePoopBorders(Arduboy2Base &display) {
     for (uint8_t i = 0; i < POOP_COUNT; i++) {
         PoopPatch &poop = cleanGame.poops[i];
         for (uint8_t row = 0; row < POOP_HEIGHT; row++) {
@@ -505,7 +505,7 @@ void drawVisiblePoopBorders(Arduboy2 &display) {
 }
 
 // Render all currently revealed and uncleared poop pixels.
-void drawVisiblePoops(Arduboy2 &display) {
+void drawVisiblePoops(Arduboy2Base &display) {
     drawVisiblePoopBorders(display);
     for (uint8_t i = 0; i < POOP_COUNT; i++) {
         PoopPatch &poop = cleanGame.poops[i];
@@ -547,7 +547,7 @@ void revealPoopPatch(PoopPatch &poop, uint8_t brushX, uint8_t brushY, uint8_t ra
 }
 
 // Scoop mode clears only pixels that were already revealed.
-void scoopPoopsInBrush(Arduboy2 &display, uint8_t brushX, uint8_t brushY) {
+void scoopPoopsInBrush(Arduboy2Base &display, uint8_t brushX, uint8_t brushY) {
     for (uint8_t i = 0; i < POOP_COUNT; i++) {
         PoopPatch &poop = cleanGame.poops[i];
         for (uint8_t row = 0; row < POOP_HEIGHT; row++) {
@@ -597,7 +597,7 @@ void revealCoinInBrush(uint8_t brushX, uint8_t brushY) {
 }
 
 // Shared 8x8-ish coin glyph used by clean/feed/walk rewards.
-void drawCoin(Arduboy2 &display, uint8_t x, uint8_t y, uint8_t color) {
+void drawCoin(Arduboy2Base &display, uint8_t x, uint8_t y, uint8_t color) {
     display.drawCircle(x, y, 3, color);
     display.drawFastVLine(x, y - 2, 5, color);
     display.drawPixel(x - 1, y - 1, color);
@@ -605,7 +605,7 @@ void drawCoin(Arduboy2 &display, uint8_t x, uint8_t y, uint8_t color) {
 }
 
 // Coins require the scoop to collect so rake-only play cannot auto-claim money.
-void collectCoinInBrush(Arduboy2 &display, uint8_t brushX, uint8_t brushY) {
+void collectCoinInBrush(Arduboy2Base &display, uint8_t brushX, uint8_t brushY) {
     if (!cleanFlag(CLEAN_HAS_HIDDEN_COIN)
         || !cleanFlag(CLEAN_COIN_FOUND)
         || cleanFlag(CLEAN_COIN_COLLECTED)) {
@@ -692,7 +692,7 @@ uint8_t clippedToolHandleLength(uint8_t x, int8_t offset, uint8_t desired) {
 }
 
 // Draw only the tool overlay; the underlying litter state is restored separately.
-void drawToolOverlay(Arduboy2 &display, uint8_t x, uint8_t y) {
+void drawToolOverlay(Arduboy2Base &display, uint8_t x, uint8_t y) {
     if (cleanGame.tool == CLEAN_TOOL_RAKE) {
         display.drawFastVLine(x - 4, y - 4, 9, BLACK);
         for (int8_t tooth = -3; tooth <= 3; tooth += 2) {
@@ -719,7 +719,7 @@ void drawToolOverlay(Arduboy2 &display, uint8_t x, uint8_t y) {
 }
 
 // Restore the screen bytes saved before the previous tool overlay was drawn.
-void restoreToolOverlay(Arduboy2 &display) {
+void restoreToolOverlay(Arduboy2Base &display) {
     if (!toolOverlay.valid) {
         return;
     }
@@ -733,7 +733,7 @@ void restoreToolOverlay(Arduboy2 &display) {
 }
 
 // Save a small byte-window around the tool so drawing the overlay is reversible.
-void saveToolOverlay(Arduboy2 &display, uint8_t toolX, uint8_t toolY) {
+void saveToolOverlay(Arduboy2Base &display, uint8_t toolX, uint8_t toolY) {
     uint8_t left = toolX > 8 ? toolX - 8 : 0;
     uint8_t right = toolX > 114 ? 127 : toolX + 13;
     uint8_t top = toolY > 4 ? toolY - 4 : 0;
@@ -762,7 +762,7 @@ void saveToolOverlay(Arduboy2 &display, uint8_t toolX, uint8_t toolY) {
 }
 
 // Clean does not clear the full screen each frame; it redraws only UI and overlay.
-void drawCleanMinigame(Arduboy2 &display, Tinyfont &font) {
+void drawCleanMinigame(Arduboy2Base &display, Tinyfont &font) {
     display.fillRect(0, LITTER_UI_Y, 128, 8, WHITE);
     font.setCursor(2, 58);
     font.print(collectedPoopCount());
@@ -2552,9 +2552,7 @@ void gameSetup() {
     arduboy.digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF);
     arduboy.setFrameRate(GAME_FPS);
     arduboy.clear();
-    arduboy.setTextColor(BLACK);
     tinyfont.setTextColor(BLACK);
-    arduboy.setTextBackground(WHITE);
     arduboy.fillScreen(WHITE);
     arduboy.initRandomSeed();
     playBootAnimation();

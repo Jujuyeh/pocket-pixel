@@ -192,7 +192,7 @@ void printAction(Tinyfont &tinyfont, uint8_t item, const char *label) {
 }
 
 // Full-screen debug overlay; kept dense to fit every test control at once.
-void drawMenu(Arduboy2 &arduboy, Tinyfont &tinyfont) {
+void drawMenu(Arduboy2Base &arduboy, Tinyfont &tinyfont) {
     printLife(tinyfont);
     printCounter(tinyfont, ITEM_MONEY, "$", pet.money);
     printCounter(tinyfont, ITEM_LEVEL, "lv", pet.level);
@@ -209,7 +209,7 @@ void drawMenu(Arduboy2 &arduboy, Tinyfont &tinyfont) {
 }
 
 // Returns true when debug consumed the frame and the game scene should not draw.
-bool debugHandleFrame(Arduboy2 &arduboy, Tinyfont &tinyfont) {
+bool debugHandleFrame(Arduboy2Base &arduboy, Tinyfont &tinyfont) {
     if (arduboy.pressed(A_BUTTON) && arduboy.pressed(B_BUTTON) && arduboy.justPressed(UP_BUTTON)) {
         visible = !visible;
         return true;
@@ -246,7 +246,7 @@ bool debugHandleFrame(Arduboy2 &arduboy, Tinyfont &tinyfont) {
 #else
 
 // Stable builds compile this no-op so Game.cpp does not need debug #ifdefs.
-bool debugHandleFrame(Arduboy2 &, Tinyfont &) {
+bool debugHandleFrame(Arduboy2Base &, Tinyfont &) {
     return false;
 }
 
