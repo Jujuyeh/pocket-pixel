@@ -5,6 +5,7 @@
   --panel-deep: #d6c6aa;
   --screen: #f8f7ef;
   --line: #2a241d;
+  --bezel: #26211c;
   --accent: #3b6f82;
   --accent-hot: #bb3e35;
   --shadow: rgba(33, 25, 17, 0.24);
@@ -54,18 +55,19 @@ a {
 }
 
 .cartridge {
+  position: relative;
   width: min(76vw, 300px);
   display: grid;
   justify-items: center;
   gap: 7px;
   margin-bottom: clamp(8px, 1.5vw, 14px);
-  padding: 16px 18px 12px;
+  padding: 16px 18px 26px;
   border: 3px solid var(--line);
   border-radius: 8px 8px 14px 14px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 36%),
     #8e8b84;
-  box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 -22px 0 rgba(0, 0, 0, 0.14);
 }
 
 .cart-grooves {
@@ -86,14 +88,17 @@ a {
 }
 
 .cart-contacts {
-  width: 100%;
-  height: 18px;
-  padding: 4px 10px 0;
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 6px;
+  height: 15px;
+  padding: 0 10px 4px;
   border: 2px solid #2a241d;
-  border-bottom: 0;
-  border-radius: 0 0 10px 10px;
+  border-top: 0;
+  border-radius: 0 0 9px 9px;
   background:
-    linear-gradient(#5b5851, #777269);
+    linear-gradient(#4d4a44, #393732);
   overflow: hidden;
 }
 
@@ -101,8 +106,8 @@ a {
   content: "";
   display: block;
   width: 100%;
-  height: 12px;
-  border-radius: 7px 7px 0 0;
+  height: 11px;
+  border-radius: 0 0 7px 7px;
   background:
     repeating-linear-gradient(
       90deg,
@@ -167,14 +172,14 @@ a {
   grid-template-rows: repeat(12, var(--pixel));
   gap: 0;
   padding: 3px;
-  background: var(--ink);
+  background: var(--bezel);
   image-rendering: pixelated;
 }
 
 .pixel-logo i {
   width: var(--pixel);
   height: var(--pixel);
-  background: var(--ink);
+  background: var(--bezel);
 }
 
 .pixel-logo i.on {
@@ -187,11 +192,18 @@ a {
   display: grid;
   grid-template-rows: auto auto;
   justify-items: center;
-  gap: 13px;
+  gap: 11px;
   padding: 16px 16px 12px;
   border: 3px solid var(--line);
   border-radius: 6px;
-  background: #26211c;
+  background: var(--bezel);
+}
+
+.bezel-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
 }
 
 .screen {
@@ -300,9 +312,10 @@ a {
 .led {
   width: 13px;
   height: 13px;
-  border: 2px solid var(--line);
+  border: 1px solid rgba(248, 247, 239, 0.42);
   border-radius: 50%;
   background: #3c3329;
+  box-shadow: 0 0 0 1px rgba(42, 36, 29, 0.55);
 }
 
 .led-red.active {
@@ -372,12 +385,13 @@ a {
 .face-buttons::before {
   content: "";
   position: absolute;
-  left: -10px;
-  right: -10px;
-  top: 37px;
-  height: 106px;
+  left: 0;
+  right: 0;
+  top: 57px;
+  height: 93px;
   border-radius: 999px;
   background: rgba(42, 36, 29, 0.46);
+  transform: rotate(-10deg) scale(0.96);
 }
 
 .face {
@@ -474,8 +488,8 @@ a {
   }
 
   .face-buttons::before {
-    top: 31px;
-    height: 78px;
+    top: 42px;
+    height: 66px;
   }
 
   .face {
