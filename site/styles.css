@@ -138,7 +138,7 @@ a {
   width: min(100%, 520px);
   display: grid;
   grid-template-rows: auto 240px;
-  gap: 42px;
+  gap: 52px;
   padding: clamp(20px, 4vw, 34px) clamp(18px, 3vw, 26px) clamp(42px, 6vw, 58px);
   border: 3px solid var(--line);
   border-radius: 8px;
@@ -187,6 +187,7 @@ a {
 }
 
 .bezel {
+  position: relative;
   width: min(100%, 430px);
   justify-self: center;
   display: grid;
@@ -200,10 +201,9 @@ a {
 }
 
 .bezel-brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 13px;
+  display: grid;
+  justify-items: center;
+  width: 100%;
 }
 
 .screen {
@@ -305,8 +305,11 @@ a {
 }
 
 .leds {
+  position: absolute;
+  left: 18px;
+  bottom: 23px;
   display: flex;
-  gap: 12px;
+  gap: 8px;
 }
 
 .led {
@@ -385,13 +388,13 @@ a {
 .face-buttons::before {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 57px;
-  height: 93px;
+  left: -8px;
+  right: -8px;
+  top: 54px;
+  height: 103px;
   border-radius: 999px;
   background: rgba(42, 36, 29, 0.46);
-  transform: rotate(-10deg) scale(0.96);
+  transform: rotate(-10deg) scale(1);
 }
 
 .face {
@@ -399,13 +402,13 @@ a {
   --active-y: 4px;
   position: relative;
   z-index: 1;
-  width: 82px;
-  height: 82px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   color: var(--paper);
   font-family: Impact, Haettenschweiler, "Arial Black", system-ui, sans-serif;
   font-weight: 900;
-  font-size: 30px;
+  font-size: 32px;
   transform: translateY(var(--rest-y));
 }
 
@@ -423,8 +426,8 @@ a {
 
 .face-b {
   background: var(--accent);
-  --rest-y: -14px;
-  --active-y: -10px;
+  --rest-y: -15px;
+  --active-y: -11px;
 }
 
 .pad.is-active,
@@ -445,7 +448,7 @@ a {
     aspect-ratio: auto;
     min-height: 0;
     grid-template-rows: auto auto;
-    gap: 20px;
+    gap: 28px;
   }
 
   .controls {
@@ -488,14 +491,14 @@ a {
   }
 
   .face-buttons::before {
-    top: 42px;
-    height: 66px;
+    top: 38px;
+    height: 74px;
   }
 
   .face {
-    width: 58px;
-    height: 58px;
-    font-size: 22px;
+    width: 62px;
+    height: 62px;
+    font-size: 24px;
   }
 
   .desktop-actions,
