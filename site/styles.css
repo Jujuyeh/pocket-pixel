@@ -110,10 +110,11 @@ a {
 
 .bezel {
   width: min(100%, 700px);
-  aspect-ratio: 2.18;
+  aspect-ratio: 2 / 1;
   justify-self: center;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: clamp(12px, 2vw, 20px);
   border: 3px solid var(--line);
   border-radius: 6px;
@@ -121,7 +122,8 @@ a {
 }
 
 .screen {
-  width: 100%;
+  height: 100%;
+  max-width: 100%;
   aspect-ratio: 2 / 1;
   border: 3px solid #0f0d0b;
   border-radius: 3px;
@@ -139,7 +141,7 @@ a {
 
 .controls {
   display: grid;
-  grid-template-columns: 160px 1fr 190px;
+  grid-template-columns: 170px 1fr 190px;
   align-items: center;
   gap: clamp(12px, 4vw, 48px);
 }
@@ -147,7 +149,7 @@ a {
 .dpad {
   position: relative;
   width: 142px;
-  height: 100px;
+  height: 142px;
 }
 
 .pad,
@@ -163,7 +165,7 @@ a {
 .pad {
   position: absolute;
   width: 48px;
-  height: 36px;
+  height: 48px;
 }
 
 .pad.up,
@@ -183,7 +185,7 @@ a {
 
 .pad.left,
 .pad.right {
-  top: 32px;
+  top: 47px;
 }
 
 .pad.left {
@@ -199,9 +201,9 @@ a {
 .pad-center {
   position: absolute;
   left: 47px;
-  top: 32px;
+  top: 47px;
   width: 48px;
-  height: 36px;
+  height: 48px;
   border: 3px solid var(--line);
   background: #29231d;
 }
@@ -241,14 +243,44 @@ a {
   background: #3c79ff;
 }
 
-.hex-link {
+.desktop-actions {
+  position: fixed;
+  left: clamp(14px, 3vw, 28px);
+  bottom: clamp(14px, 3vw, 28px);
+  display: flex;
+  gap: 8px;
+  opacity: 0.8;
+}
+
+.keyboard-legend {
+  position: fixed;
+  right: clamp(14px, 3vw, 28px);
+  bottom: clamp(14px, 3vw, 28px);
+  display: grid;
+  gap: 5px;
+  justify-items: end;
+  opacity: 0.8;
+  font-size: 12px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.keyboard-legend span,
+.utility-link {
   color: var(--ink);
-  text-decoration: none;
   border: 2px solid var(--line);
+  background: var(--paper);
+}
+
+.keyboard-legend span {
+  padding: 4px 7px;
+}
+
+.utility-link {
+  text-decoration: none;
   padding: 5px 9px;
   min-width: 44px;
   text-align: center;
-  background: var(--paper);
   font-size: 12px;
   font-weight: 800;
 }
@@ -324,12 +356,12 @@ a {
 
   .dpad {
     width: 124px;
-    height: 92px;
+    height: 124px;
   }
 
   .pad {
     width: 42px;
-    height: 34px;
+    height: 42px;
   }
 
   .pad.up,
@@ -341,12 +373,12 @@ a {
   .pad.left,
   .pad.right,
   .pad-center {
-    top: 29px;
+    top: 41px;
   }
 
   .pad-center {
     width: 42px;
-    height: 34px;
+    height: 42px;
   }
 
   .face-buttons {
@@ -356,5 +388,10 @@ a {
   .face {
     width: 58px;
     height: 58px;
+  }
+
+  .desktop-actions,
+  .keyboard-legend {
+    display: none;
   }
 }
