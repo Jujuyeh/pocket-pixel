@@ -85,6 +85,19 @@ a {
   image-rendering: pixelated;
 }
 
+.cart-contacts {
+  width: 46%;
+  height: 15px;
+  border: 2px solid #2a241d;
+  border-top: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      #caa64e 0 7px,
+      #2d3f2c 7px 11px
+    );
+}
+
 .page-title h1,
 .page-title p {
   margin: 0;
@@ -103,17 +116,35 @@ a {
 }
 
 .device {
-  width: min(100%, 540px);
+  position: relative;
+  width: min(100%, 520px);
   display: grid;
-  grid-template-rows: auto 210px;
-  gap: 30px;
-  padding: clamp(20px, 4vw, 34px) clamp(20px, 4vw, 34px) clamp(28px, 5vw, 44px);
+  grid-template-rows: auto 240px;
+  gap: 42px;
+  padding: clamp(20px, 4vw, 34px) clamp(18px, 3vw, 26px) clamp(42px, 6vw, 58px);
   border: 3px solid var(--line);
   border-radius: 8px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 42%),
     var(--panel);
   box-shadow: 0 18px 0 var(--panel-deep), 0 26px 34px var(--shadow);
+}
+
+.device::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -16px;
+  width: 62px;
+  height: 15px;
+  transform: translateX(-50%);
+  border: 3px solid var(--line);
+  border-top: 0;
+  border-radius: 0 0 5px 5px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent),
+    #34302a;
+  box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.2);
 }
 
 .pixel-logo {
@@ -318,11 +349,13 @@ a {
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
-  gap: 20px;
-  padding-top: 38px;
+  gap: 14px;
+  padding-top: 50px;
 }
 
 .face {
+  --rest-y: 0;
+  --active-y: 4px;
   width: 82px;
   height: 82px;
   border-radius: 50%;
@@ -330,6 +363,7 @@ a {
   font: inherit;
   font-weight: 900;
   font-size: 18px;
+  transform: translateY(var(--rest-y));
 }
 
 .face span {
@@ -339,25 +373,20 @@ a {
 
 .face-a {
   background: var(--accent-hot);
-  transform: translateY(18px);
+  --rest-y: 18px;
+  --active-y: 22px;
 }
 
 .face-b {
   background: var(--accent);
+  --rest-y: -6px;
+  --active-y: -2px;
 }
 
 .pad.is-active,
 .face.is-active {
-  transform: translateY(4px);
+  transform: translateY(var(--active-y));
   box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.3), 0 1px 0 var(--shadow);
-}
-
-.face-b.is-active {
-  transform: translateY(4px);
-}
-
-.face-a.is-active {
-  transform: translateY(22px);
 }
 
 @media (max-width: 760px) {
