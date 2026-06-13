@@ -45,10 +45,8 @@ a {
 
 .device {
   width: min(100%, 830px);
-  aspect-ratio: 1.72;
-  min-height: 500px;
   display: grid;
-  grid-template-rows: auto 1fr 132px;
+  grid-template-rows: auto auto 132px;
   gap: 18px;
   padding: clamp(18px, 3vw, 30px);
   border: 3px solid var(--line);
@@ -111,17 +109,19 @@ a {
 }
 
 .bezel {
-  min-height: 0;
+  width: min(100%, 700px);
+  aspect-ratio: 2.18;
+  justify-self: center;
   display: grid;
   place-items: center;
-  padding: clamp(14px, 2.5vw, 24px);
+  padding: clamp(12px, 2vw, 20px);
   border: 3px solid var(--line);
   border-radius: 6px;
   background: #26211c;
 }
 
 .screen {
-  width: min(100%, 640px);
+  width: 100%;
   aspect-ratio: 2 / 1;
   border: 3px solid #0f0d0b;
   border-radius: 3px;
@@ -300,8 +300,8 @@ a {
 
   .device {
     aspect-ratio: auto;
-    min-height: calc(100vh - 28px);
-    grid-template-rows: auto auto 1fr;
+    min-height: 0;
+    grid-template-rows: auto auto auto;
   }
 
   .brand {
