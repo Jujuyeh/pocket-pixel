@@ -9,8 +9,12 @@ extern const uint8_t heartEmpty[] PROGMEM;
 extern const uint8_t heartHalf[] PROGMEM;
 extern const uint8_t heartFull[] PROGMEM;
 
-extern const uint8_t bowl[] PROGMEM;
-extern const uint8_t food[] PROGMEM;
+extern const uint8_t menuLabelFeed[] PROGMEM;
+extern const uint8_t menuLabelPlay[] PROGMEM;
+extern const uint8_t menuLabelClean[] PROGMEM;
+extern const uint8_t menuLabelWalk[] PROGMEM;
+extern const uint8_t menuLabelWater[] PROGMEM;
+
 extern const uint8_t feedFish[] PROGMEM;
 extern const uint8_t feedChicken[] PROGMEM;
 extern const uint8_t feedBowl[] PROGMEM;

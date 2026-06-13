@@ -7,4 +7,4 @@
 #define POCKET_PIXEL_DEBUG 0
 #endif
 
-bool debugHandleFrame(Arduboy2 &arduboy, Tinyfont &tinyfont);
+bool debugHandleFrame(Arduboy2Base &arduboy, Tinyfont &tinyfont);

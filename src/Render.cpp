@@ -27,19 +27,19 @@ uint8_t countDigits(uint16_t value) {
 }
 
 // Draws the small circular button prompt used by action scenes.
-void drawButtonHint(Arduboy2 &arduboy, Tinyfont &tinyfont, uint8_t y, const char *label) {
+void drawButtonHint(Arduboy2Base &arduboy, Tinyfont &tinyfont, uint8_t y, const char *label) {
     arduboy.fillCircle(96, y + 1, 3, BLACK);
     tinyfont.setCursor(102, y);
     tinyfont.print(label);
 }
 
 // Default idle-screen life bar position.
-void drawLifeBar(Arduboy2 &arduboy) {
+void drawLifeBar(Arduboy2Base &arduboy) {
     drawLifeBarAt(arduboy, 2);
 }
 
 // Life is stored in half-heart units, so three sprites cover all six states.
-void drawLifeBarAt(Arduboy2 &arduboy, int16_t x) {
+void drawLifeBarAt(Arduboy2Base &arduboy, int16_t x) {
     switch (pet.life)
     {
     case 6:
@@ -81,7 +81,7 @@ void drawLifeBarAt(Arduboy2 &arduboy, int16_t x) {
 }
 
 // XP fill is proportional to the dynamic width used by the sliding menu.
-void drawXpBar(Arduboy2 &arduboy, Tinyfont &tinyfont, int16_t x, uint8_t width) {
+void drawXpBar(Arduboy2Base &arduboy, Tinyfont &tinyfont, int16_t x, uint8_t width) {
     uint8_t innerWidth = width > 4 ? width - 4 : 0;
     uint8_t barFillWidth = (uint8_t) ((uint16_t) innerWidth * pet.xpTenths / 10);
     arduboy.drawRoundRect(x, 57, width, 6, 1, BLACK);
@@ -101,7 +101,7 @@ void drawMoneyHud(Tinyfont &tinyfont) {
 }
 
 // Draw the right-side action drawer; x is animated by the idle scene.
-void drawMenu(Arduboy2 &arduboy, int16_t x, uint8_t selectedAction) {
+void drawMenu(Arduboy2Base &arduboy, int16_t x, uint8_t selectedAction) {
     if (x >= 128) {
         return;
     }
@@ -111,16 +111,11 @@ void drawMenu(Arduboy2 &arduboy, int16_t x, uint8_t selectedAction) {
     arduboy.drawFastVLine(x, 1, 62, BLACK);
     arduboy.drawFastVLine(x + MENU_WIDTH - 1, 1, 62, BLACK);
 
-    arduboy.setCursor(x + 10, 4);
-    arduboy.print("Feed");
-    arduboy.setCursor(x + 10, 16);
-    arduboy.print("Play");
-    arduboy.setCursor(x + 10, 28);
-    arduboy.print("Clean");
-    arduboy.setCursor(x + 10, 40);
-    arduboy.print("Walk");
-    arduboy.setCursor(x + 10, 52);
-    arduboy.print("Water");
+    Sprites::drawOverwrite(x + 10, 4, menuLabelFeed, 0);
+    Sprites::drawOverwrite(x + 10, 16, menuLabelPlay, 0);
+    Sprites::drawOverwrite(x + 10, 28, menuLabelClean, 0);
+    Sprites::drawOverwrite(x + 10, 40, menuLabelWalk, 0);
+    Sprites::drawOverwrite(x + 10, 52, menuLabelWater, 0);
 
     arduboy.fillRect(x + 1, 1, 7, 62, WHITE);
     arduboy.drawFastVLine(x + 2, 29, 5, BLACK);

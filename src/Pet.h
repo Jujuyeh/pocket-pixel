@@ -19,7 +19,7 @@ struct PetState {
   uint8_t life = MAX_LIFE;
   uint8_t level = 0;
   uint8_t xpTenths = 1;
-  uint16_t money = 100;
+  uint16_t money = 1000;
 };
 
 extern PetState pet;

@@ -32,8 +32,8 @@ inactive action plays a short denied sound.
 Feed, play, clean, walk, and water now have playable minigames. The intended
 minigame design is tracked in `docs/minigames.md`.
 
-Random state frequency, feed cost, and fish/chicken spawn preference now come
-from the active personality profile generated from `profiles/pixel.json`.
+Random state frequency and fish/chicken spawn preference now come from the
+active personality profile generated from `profiles/pixel.json`.
 
 ## Controls
 
@@ -62,6 +62,13 @@ On the feed minigame:
 
 - Left/right move the bowl.
 - Fish and chicken pieces increase the bowl fill when caught.
+- Catching a chicken costs 20 money. Catching a fish costs 50 money.
+- If a food catch leaves money at 0, the screen flashes like a poop hit but the
+  bowl/hunger progress is not reduced.
+- If current money cannot cover the food cost, caught food flashes like a poop
+  hit, does not count toward the bowl, and does not change money.
+- The feed money readout blinks slowly when money is below 100.
+- Falling coins become more likely while money is below 100.
 - Falling poop reuses the existing poop sprite; catching it halves the current
   bowl progress, therefore increasing hunger, and flashes the display.
 - Occasional falling coins can be caught for 50 money without changing bowl
@@ -72,8 +79,7 @@ On the feed minigame:
   current life. For example, life `3/6` starts on bowl frame `3`.
 - The required number of fish/chicken pieces is the missing half-heart count
   multiplied by 2. For example, life `3/6` needs 6 food catches.
-- Completing the bowl sets life to full, costs the active profile's feed cost,
-  grants XP, saves, and returns to idle.
+- Completing the bowl sets life to full, grants XP, saves, and returns to idle.
 - A exits early, saves, and sets life to the current bowl progress.
 
 On the clean minigame:
@@ -139,6 +145,8 @@ On the water minigame:
 - Completing the meter clears `SCRATCHING`, grants XP, plays the shared success
   tone, saves, and returns to idle.
 - While `SCRATCHING` is active, the Arduboy RGB LED alternates red and blue.
+  The scratching penalty is applied once per scratch pulse while the idle-screen
+  scratching animation is active, not in the water minigame.
 
 On debug builds only:
 
@@ -148,6 +156,8 @@ On debug builds only:
 - Holding B while pressing left/right uses larger counter steps where useful.
 - B toggles selected flag rows and applies command rows.
 - A closes the debug menu.
+- Debug labels are abbreviated to keep the debug build under the Arduboy flash
+  limit.
 
 ## Stats
 
@@ -155,8 +165,11 @@ On debug builds only:
 - Hunger is derived from life. The pet is hungry whenever life is below
   `MAX_LIFE`.
 - Random hunger events reduce life over time.
+- While sleeping, random events cannot add hunger, dirtiness, boredom, anxiety,
+  or scratching. Sleeping also suppresses dirty/scratching presentation if a
+  debug or legacy state ever contains overlapping flags.
 - Feeding is now a catch-food minigame. Completion restores life to full and
-  costs money. Exiting early applies partial bowl progress to life.
+  food catches cost money. Exiting early applies partial bowl progress to life.
 - Care actions grant XP and some actions grant money.
 - Cleaning can reveal hidden coins worth 100, 200, 500, or 1000. Higher values
   are rarer.
@@ -180,7 +193,7 @@ Invalid save data resets to the default recovered state:
 - full life,
 - level 0,
 - one tenth of the XP bar filled,
-- 100 money,
+- 1000 money,
 - no active status flags.
 
 ## Known Technical Notes
