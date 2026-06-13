@@ -238,6 +238,14 @@ a {
   transform: translateX(10px);
 }
 
+.dpad::before {
+  content: "";
+  position: absolute;
+  inset: 15px;
+  border-radius: 50%;
+  background: rgba(42, 36, 29, 0.42);
+}
+
 .pad,
 .face {
   appearance: none;
@@ -252,6 +260,7 @@ a {
   position: absolute;
   width: 58px;
   height: 58px;
+  z-index: 1;
 }
 
 .pad.up,
@@ -260,13 +269,15 @@ a {
 }
 
 .pad.up {
-  top: 0;
-  border-radius: 4px 4px 2px 2px;
+  top: 8px;
+  border-radius: 7px;
+  clip-path: polygon(0 0, 100% 0, 100% 77%, 50% 100%, 0 77%);
 }
 
 .pad.down {
-  bottom: 0;
-  border-radius: 2px 2px 4px 4px;
+  bottom: 8px;
+  border-radius: 7px;
+  clip-path: polygon(0 23%, 50% 0, 100% 23%, 100% 100%, 0 100%);
 }
 
 .pad.left,
@@ -275,23 +286,19 @@ a {
 }
 
 .pad.left {
-  left: 0;
-  border-radius: 4px 2px 2px 4px;
+  left: 8px;
+  border-radius: 7px;
+  clip-path: polygon(0 0, 77% 0, 100% 50%, 77% 100%, 0 100%);
 }
 
 .pad.right {
-  right: 0;
-  border-radius: 2px 4px 4px 2px;
+  right: 8px;
+  border-radius: 7px;
+  clip-path: polygon(23% 0, 100% 0, 100% 100%, 23% 100%, 0 50%);
 }
 
 .pad-center {
-  position: absolute;
-  left: 55px;
-  top: 55px;
-  width: 58px;
-  height: 58px;
-  border: 3px solid var(--line);
-  background: #29231d;
+  display: none;
 }
 
 .system-strip {
@@ -388,13 +395,13 @@ a {
 .face-buttons::before {
   content: "";
   position: absolute;
-  left: -8px;
-  right: -8px;
-  top: 54px;
-  height: 103px;
+  left: -10px;
+  right: -12px;
+  top: 48px;
+  height: 108px;
   border-radius: 999px;
   background: rgba(42, 36, 29, 0.46);
-  transform: rotate(-10deg) scale(1);
+  transform: rotate(-15deg) scale(1);
 }
 
 .face {
@@ -469,20 +476,29 @@ a {
   }
 
   .pad.up,
-  .pad.down,
-  .pad-center {
+  .pad.down {
     left: 41px;
   }
 
   .pad.left,
-  .pad.right,
-  .pad-center {
+  .pad.right {
     top: 41px;
   }
 
-  .pad-center {
-    width: 42px;
-    height: 42px;
+  .pad.up {
+    top: 6px;
+  }
+
+  .pad.down {
+    bottom: 6px;
+  }
+
+  .pad.left {
+    left: 6px;
+  }
+
+  .pad.right {
+    right: 6px;
   }
 
   .face-buttons {
@@ -491,8 +507,8 @@ a {
   }
 
   .face-buttons::before {
-    top: 38px;
-    height: 74px;
+    top: 34px;
+    height: 80px;
   }
 
   .face {
