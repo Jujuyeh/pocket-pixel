@@ -81,10 +81,11 @@ function updateDeviceScale() {
   const device = document.querySelector(".device");
   if (!shell || !device) return;
 
-  const available = Math.max(280, Math.min(520, document.documentElement.clientWidth - 24));
+  const available = Math.max(1, Math.min(520, document.documentElement.clientWidth - 24));
   const scale = Math.min(1, available / 520);
   shell.style.setProperty("--device-scale", String(scale));
   shell.style.setProperty("--device-height", `${device.offsetHeight}px`);
+  shell.style.width = `${520 * scale}px`;
 }
 
 function eventTargets() {
@@ -152,11 +153,14 @@ function postPlayerAudioMessage(message) {
 
 function unlockPlayerAudio() {
   const api = playerAudioApi();
+  if (api?.prime) {
+    return api.prime();
+  }
   if (api?.unlock) {
-    return api.unlock();
+    return api.unlock(true);
   }
 
-  postPlayerAudioMessage({ type: "pocket-pixel:audio-unlock" });
+  postPlayerAudioMessage({ type: "pocket-pixel:audio-prime" });
   return Promise.resolve();
 }
 
@@ -234,9 +238,9 @@ function setupControls() {
   document.querySelectorAll("[data-key]").forEach((control) => {
     buttons.set(control.dataset.key, control);
 
-    control.addEventListener("pointerdown", async (event) => {
+    control.addEventListener("pointerdown", (event) => {
       event.preventDefault();
-      await unlockPlayerAudio();
+      unlockPlayerAudio();
       control.setPointerCapture(event.pointerId);
       pointerKeys.set(event.pointerId, control.dataset.key);
       pressKey(control.dataset.key);
@@ -267,17 +271,17 @@ function setupControls() {
     control.addEventListener("pointercancel", stop);
   });
 
-  window.addEventListener("keydown", async (event) => {
+  window.addEventListener("keydown", (event) => {
     if (event.key.toLowerCase() === "m") {
       event.preventDefault();
-      await togglePlayerMuted();
+      togglePlayerMuted();
       return;
     }
 
     const logicalKey = keyboardAliases.get(event.key);
     if (!logicalKey) return;
     event.preventDefault();
-    await unlockPlayerAudio();
+    unlockPlayerAudio();
     setButtonState(logicalKey, true);
     if (event.isTrusted) {
       dispatchFrameKey("keydown", logicalKey);

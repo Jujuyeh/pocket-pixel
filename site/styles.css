@@ -30,6 +30,7 @@ body {
   background-size: 18px 18px;
   font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   letter-spacing: 0;
+  overflow-x: hidden;
 }
 
 button,
@@ -50,10 +51,10 @@ a {
 .device-shell {
   --device-scale: 1;
   --device-height: 690px;
-  width: min(100%, 520px);
+  width: 520px;
   height: calc(var(--device-height) * var(--device-scale));
   display: grid;
-  justify-items: center;
+  justify-items: start;
 }
 
 .page-title {
@@ -155,7 +156,7 @@ a {
     var(--panel);
   box-shadow: 0 18px 0 var(--panel-deep), 0 26px 34px var(--shadow);
   transform: scale(var(--device-scale));
-  transform-origin: top center;
+  transform-origin: top left;
 }
 
 .device::after {
@@ -378,9 +379,9 @@ a {
 }
 
 .audio-toggle {
-  position: absolute;
-  right: 18px;
-  bottom: 18px;
+  position: fixed;
+  right: clamp(14px, 3vw, 28px);
+  bottom: clamp(14px, 3vw, 28px);
   width: 34px;
   height: 26px;
   border: 2px solid var(--line);
@@ -388,6 +389,7 @@ a {
   background: rgba(247, 243, 231, 0.55);
   cursor: pointer;
   touch-action: none;
+  z-index: 2;
 }
 
 .audio-toggle::before {
@@ -437,7 +439,7 @@ a {
 .keyboard-legend {
   position: fixed;
   right: clamp(14px, 3vw, 28px);
-  bottom: clamp(14px, 3vw, 28px);
+  bottom: clamp(52px, 6vw, 68px);
   display: grid;
   gap: 5px;
   justify-items: end;

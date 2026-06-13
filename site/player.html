@@ -43,15 +43,23 @@
         context() {
           return Module._saudio_context || null;
         },
-        async unlock() {
+        async unlock(forcePulse = false) {
           this.unlockRequested = true;
           const context = this.context();
-          if (!context || this.muted || context.state !== "suspended") return;
+          if (!context || this.muted) return;
           try {
-            await context.resume();
+            if (context.state === "suspended") {
+              await context.resume();
+            } else if (forcePulse) {
+              await context.suspend();
+              await context.resume();
+            }
           } catch (_) {
             // Browsers only allow audio resume during trusted user gestures.
           }
+        },
+        async prime() {
+          return this.unlock(true);
         },
         async setMuted(muted) {
           this.muted = Boolean(muted);
@@ -91,6 +99,8 @@
         if (event.origin !== window.location.origin) return;
         if (event.data?.type === "pocket-pixel:audio-unlock") {
           PocketPixelAudio.unlock();
+        } else if (event.data?.type === "pocket-pixel:audio-prime") {
+          PocketPixelAudio.prime();
         } else if (event.data?.type === "pocket-pixel:audio-muted") {
           PocketPixelAudio.setMuted(event.data.muted);
         }
@@ -143,6 +153,9 @@
           fetchGameFile(value)
             .then((buffer) => loadFile(param, value, new Uint8Array(buffer)));
         }
+        window.setTimeout(() => {
+          PocketPixelAudio.setMuted(true).then(() => PocketPixelAudio.setMuted(false));
+        }, 500);
       };
     </script>
     <script src="vendor/ardens/ArdensPlayer.js"></script>
