@@ -232,15 +232,15 @@ a {
 
 .dpad {
   position: relative;
-  width: 168px;
-  height: 168px;
+  width: 182px;
+  height: 182px;
   transform: translateX(10px);
 }
 
 .dpad::before {
   content: "";
   position: absolute;
-  inset: 15px;
+  inset: 13px;
   border-radius: 50%;
   background: rgba(42, 36, 29, 0.42);
 }
@@ -291,7 +291,7 @@ a {
 
 .pad.up,
 .pad.down {
-  left: 52px;
+  left: 55px;
   height: 82px;
 }
 
@@ -307,7 +307,7 @@ a {
 
 .pad.left,
 .pad.right {
-  top: 52px;
+  top: 55px;
   width: 82px;
 }
 
@@ -497,9 +497,13 @@ a {
   }
 
   .dpad {
-    width: 124px;
-    height: 124px;
+    width: 134px;
+    height: 134px;
     transform: translateX(5px);
+  }
+
+  .dpad::before {
+    inset: 10px;
   }
 
   .pad {
@@ -509,13 +513,13 @@ a {
 
   .pad.up,
   .pad.down {
-    left: 40px;
+    left: 43px;
     height: 64px;
   }
 
   .pad.left,
   .pad.right {
-    top: 40px;
+    top: 43px;
     width: 64px;
   }
 
