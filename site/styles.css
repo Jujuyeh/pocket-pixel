@@ -91,12 +91,11 @@ a {
   position: absolute;
   left: 18px;
   right: 18px;
-  bottom: 6px;
-  height: 15px;
-  padding: 0 10px 4px;
+  bottom: 3px;
+  height: 17px;
+  padding: 3px 10px;
   border: 2px solid #2a241d;
-  border-top: 0;
-  border-radius: 0 0 9px 9px;
+  border-radius: 8px;
   background:
     linear-gradient(#4d4a44, #393732);
   overflow: hidden;
@@ -106,8 +105,8 @@ a {
   content: "";
   display: block;
   width: 100%;
-  height: 11px;
-  border-radius: 0 0 7px 7px;
+  height: 100%;
+  border-radius: 6px;
   background:
     repeating-linear-gradient(
       90deg,
@@ -256,10 +255,11 @@ a {
 }
 
 .pad {
+  --shape: polygon(0 0, 100% 0, 100% 100%, 0 100%);
   appearance: none;
   position: absolute;
-  width: 58px;
-  height: 58px;
+  width: 64px;
+  height: 64px;
   z-index: 1;
   border: 0;
   background: transparent;
@@ -273,89 +273,52 @@ a {
 .pad::after {
   content: "";
   position: absolute;
-  background: #29231d;
-  border: 3px solid var(--line);
-  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.28), 0 4px 0 var(--shadow);
+  clip-path: var(--shape);
+  border-radius: 9px;
 }
 
 .pad::before {
-  z-index: 1;
+  inset: 0;
+  background: var(--line);
+  filter: drop-shadow(0 4px 0 var(--shadow));
 }
 
 .pad::after {
-  z-index: 0;
-  width: 26px;
-  height: 26px;
-  border-radius: 9px;
-  transform: rotate(45deg);
+  inset: 3px;
+  background: #29231d;
+  box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.28);
 }
 
 .pad.up,
 .pad.down {
-  left: 55px;
-  height: 70px;
+  left: 52px;
+  height: 76px;
 }
 
 .pad.up {
-  top: 6px;
-}
-
-.pad.up::before {
-  inset: 0 0 14px;
-  border-radius: 8px 8px 13px 13px;
-}
-
-.pad.up::after {
-  left: 16px;
-  bottom: 4px;
+  --shape: polygon(0 0, 100% 0, 100% 70%, 50% 100%, 0 70%);
+  top: 4px;
 }
 
 .pad.down {
-  bottom: 6px;
-}
-
-.pad.down::before {
-  inset: 14px 0 0;
-  border-radius: 13px 13px 8px 8px;
-}
-
-.pad.down::after {
-  left: 16px;
-  top: 4px;
+  --shape: polygon(0 30%, 50% 0, 100% 30%, 100% 100%, 0 100%);
+  bottom: 4px;
 }
 
 .pad.left,
 .pad.right {
-  top: 55px;
-  width: 70px;
+  top: 52px;
+  width: 76px;
 }
 
 .pad.left {
-  left: 6px;
-}
-
-.pad.left::before {
-  inset: 0 14px 0 0;
-  border-radius: 8px 13px 13px 8px;
-}
-
-.pad.left::after {
-  right: 4px;
-  top: 16px;
+  --shape: polygon(0 0, 70% 0, 100% 50%, 70% 100%, 0 100%);
+  left: 4px;
 }
 
 .pad.right {
-  right: 6px;
-}
-
-.pad.right::before {
-  inset: 0 0 0 14px;
-  border-radius: 13px 8px 8px 13px;
-}
-
-.pad.right::after {
-  left: 4px;
-  top: 16px;
+  --shape: polygon(30% 0, 100% 0, 100% 100%, 30% 100%, 0 50%);
+  right: 4px;
 }
 
 .pad-center {
@@ -504,13 +467,12 @@ a {
 }
 
 .pad.is-active {
-  transform: translateY(4px) scale(0.96);
-  filter: brightness(1.18);
+  transform: translateY(5px) scale(0.94);
+  filter: brightness(1.22);
 }
 
-.pad.is-active::before,
 .pad.is-active::after {
-  box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.34), 0 1px 0 var(--shadow);
+  box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.34);
 }
 
 @media (max-width: 760px) {
@@ -541,82 +503,36 @@ a {
   }
 
   .pad {
-    width: 42px;
-    height: 42px;
-  }
-
-  .pad::after {
-    width: 19px;
-    height: 19px;
-    border-radius: 7px;
+    width: 44px;
+    height: 44px;
   }
 
   .pad.up,
   .pad.down {
-    left: 41px;
-    height: 54px;
+    left: 40px;
+    height: 58px;
   }
 
   .pad.left,
   .pad.right {
-    top: 41px;
-    width: 54px;
+    top: 40px;
+    width: 58px;
   }
 
   .pad.up {
-    top: 5px;
+    top: 2px;
   }
 
   .pad.down {
-    bottom: 5px;
+    bottom: 2px;
   }
 
   .pad.left {
-    left: 5px;
+    left: 2px;
   }
 
   .pad.right {
-    right: 5px;
-  }
-
-  .pad.up::before {
-    inset: 0 0 10px;
-    border-radius: 7px 7px 10px 10px;
-  }
-
-  .pad.up::after {
-    left: 10px;
-    bottom: 3px;
-  }
-
-  .pad.down::before {
-    inset: 10px 0 0;
-    border-radius: 10px 10px 7px 7px;
-  }
-
-  .pad.down::after {
-    left: 10px;
-    top: 3px;
-  }
-
-  .pad.left::before {
-    inset: 0 10px 0 0;
-    border-radius: 7px 10px 10px 7px;
-  }
-
-  .pad.left::after {
-    right: 3px;
-    top: 10px;
-  }
-
-  .pad.right::before {
-    inset: 0 0 0 10px;
-    border-radius: 10px 7px 7px 10px;
-  }
-
-  .pad.right::after {
-    left: 3px;
-    top: 10px;
+    right: 2px;
   }
 
   .face-buttons {
