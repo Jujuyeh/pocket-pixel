@@ -67,6 +67,7 @@ function setupPlayer() {
   playerUrl.searchParams.set("file", rom);
   playerUrl.searchParams.set("grid", "none");
   playerUrl.searchParams.set("palette", "default");
+  playerUrl.searchParams.set("touch", "0");
 
   player.src = playerUrl.href;
   hexLink.href = rom;

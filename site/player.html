@@ -79,6 +79,19 @@
 
       window.PocketPixelAudio = PocketPixelAudio;
 
+      function blockNativeTouchControls(event) {
+        PocketPixelAudio.unlock();
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+
+      ["touchstart", "touchmove", "touchend", "touchcancel"].forEach((type) => {
+        Module.canvas.addEventListener(type, blockNativeTouchControls, {
+          capture: true,
+          passive: false
+        });
+      });
+
       window.addEventListener("message", (event) => {
         if (event.origin !== window.location.origin) return;
         if (event.data?.type === "pocket-pixel:audio-unlock") {
