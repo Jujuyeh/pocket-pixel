@@ -15,6 +15,7 @@ fi
 
 mkdir -p "${site_dir}/build" "${site_dir}/vendor/ardens"
 cp "${hex_source}" "${site_dir}/build/pocket-pixel-latest.hex"
+cp "${root}/assets/fx/banner.png" "${site_dir}/build/banner.png"
 
 curl -fsSL "${ardens_base}/ArdensPlayer.js" \
   -o "${site_dir}/vendor/ardens/ArdensPlayer.js"

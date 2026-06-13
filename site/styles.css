@@ -42,15 +42,47 @@ a {
   grid-template-rows: auto auto;
   place-items: center;
   align-content: center;
-  gap: clamp(14px, 2.8vw, 26px);
+  gap: clamp(22px, 3.8vw, 42px);
   padding: clamp(14px, 4vw, 34px);
 }
 
 .page-title {
   display: grid;
   justify-items: center;
-  gap: 4px;
+  gap: 5px;
   text-align: center;
+}
+
+.cartridge {
+  width: min(76vw, 300px);
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin-bottom: clamp(8px, 1.5vw, 14px);
+  padding: 16px 18px 18px;
+  border: 3px solid var(--line);
+  border-radius: 8px 8px 14px 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 36%),
+    #8e8b84;
+  box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.12);
+}
+
+.cart-grooves {
+  width: 100%;
+  height: 18px;
+  border-top: 3px solid rgba(42, 36, 29, 0.65);
+  border-bottom: 3px solid rgba(42, 36, 29, 0.45);
+}
+
+.cartridge img {
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  display: block;
+  border: 3px solid var(--line);
+  background: var(--paper);
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
 }
 
 .page-title h1,
@@ -74,8 +106,8 @@ a {
   width: min(100%, 540px);
   display: grid;
   grid-template-rows: auto 210px;
-  gap: 24px;
-  padding: clamp(20px, 4vw, 34px);
+  gap: 30px;
+  padding: clamp(20px, 4vw, 34px) clamp(20px, 4vw, 34px) clamp(28px, 5vw, 44px);
   border: 3px solid var(--line);
   border-radius: 8px;
   background:
@@ -307,11 +339,11 @@ a {
 
 .face-a {
   background: var(--accent-hot);
+  transform: translateY(18px);
 }
 
 .face-b {
   background: var(--accent);
-  transform: translateY(18px);
 }
 
 .pad.is-active,
@@ -321,20 +353,24 @@ a {
 }
 
 .face-b.is-active {
+  transform: translateY(4px);
+}
+
+.face-a.is-active {
   transform: translateY(22px);
 }
 
 @media (max-width: 760px) {
   .stage {
     align-items: start;
-    gap: 12px;
+    gap: 16px;
   }
 
   .device {
     aspect-ratio: auto;
     min-height: 0;
     grid-template-rows: auto auto;
-    gap: 16px;
+    gap: 20px;
   }
 
   .controls {
