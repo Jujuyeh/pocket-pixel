@@ -84,10 +84,15 @@ function updateDeviceScale() {
   if (!shell || !device) return;
 
   const available = Math.max(1, Math.min(520, document.documentElement.clientWidth - 24));
-  const scale = Math.min(1, available / 520);
+  const scale = Math.round(Math.min(1, available / 520) * 10000) / 10000;
+  const height = Math.round(device.offsetHeight * scale);
+  const width = Math.round(520 * scale);
+  if (shell.style.getPropertyValue("--device-scale") === String(scale)) return;
+
   shell.style.setProperty("--device-scale", String(scale));
   shell.style.setProperty("--device-height", `${device.offsetHeight}px`);
-  shell.style.width = `${520 * scale}px`;
+  shell.style.width = `${width}px`;
+  shell.style.height = `${height}px`;
 }
 
 function eventTargets() {
@@ -247,6 +252,7 @@ function setupControls() {
     });
 
     control.addEventListener("pointermove", (event) => {
+      if (!pointerKeys.has(event.pointerId)) return;
       event.preventDefault();
       const previous = pointerKeys.get(event.pointerId);
       const next = keyFromPoint(event.clientX, event.clientY);
