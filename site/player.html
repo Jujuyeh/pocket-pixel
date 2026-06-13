@@ -111,9 +111,11 @@
       });
 
       window.addEventListener("keydown", (event) => {
-        if (event.key.toLowerCase() !== "m") return;
-        event.preventDefault();
-        PocketPixelAudio.toggleMuted();
+        PocketPixelAudio.prime();
+        if (event.key.toLowerCase() === "m") {
+          event.preventDefault();
+          PocketPixelAudio.toggleMuted();
+        }
       });
 
       function loadFile(param, fname, fdata) {

@@ -126,6 +126,7 @@ function dispatchFrameKey(type, logicalKey) {
 function focusPlayerCanvas() {
   const iframe = document.querySelector("#player");
   try {
+    iframe?.focus();
     const canvas = iframe.contentDocument?.querySelector("canvas");
     canvas?.focus();
   } catch (_) {
@@ -274,6 +275,7 @@ function setupControls() {
   window.addEventListener("keydown", (event) => {
     if (event.key.toLowerCase() === "m") {
       event.preventDefault();
+      focusPlayerCanvas();
       togglePlayerMuted();
       return;
     }
@@ -281,6 +283,7 @@ function setupControls() {
     const logicalKey = keyboardAliases.get(event.key);
     if (!logicalKey) return;
     event.preventDefault();
+    focusPlayerCanvas();
     unlockPlayerAudio();
     setButtonState(logicalKey, true);
     if (event.isTrusted) {
