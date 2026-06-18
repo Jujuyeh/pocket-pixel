@@ -10,7 +10,7 @@ Usage:
   arduboy-deploy.sh <command> [options]
 
 Commands:
-  compile             Compile stable/debug build.
+  compile             Compile stable/debug/FX-C build.
   classic-upload      Upload to a classic Arduboy using Arduino CLI/Makefile.
   fx-install-loader   Clone/update chrisdiana/arduboy-flashcart-loader.
   fx-backup           Back up an Arduboy FX flashcart.
@@ -21,7 +21,7 @@ Commands:
 
 Common options:
   --project-root DIR  Project directory. Default: current directory.
-  --build NAME        stable or debug. Default: stable.
+  --build NAME        stable, debug, or fxc. Default: stable.
   --profile FILE      Personality profile. Default: profiles/pixel.json.
   --no-nix            Do not wrap make/python commands in nix develop.
   --yes               Required for write/upload operations.
@@ -123,13 +123,13 @@ command_compile() {
     esac
   done
   project_root="$(abs_path "$project_root")"
-  case "$build" in stable|debug) ;; *) die "--build must be stable or debug" ;; esac
+  case "$build" in stable|debug|fxc) ;; *) die "--build must be stable, debug, or fxc" ;; esac
   if [ -f "$project_root/Makefile" ]; then
-    if [ "$build" = "debug" ]; then
-      run_in_project "$project_root" "$use_nix" make compile-debug
-    else
-      run_in_project "$project_root" "$use_nix" make compile
-    fi
+    case "$build" in
+      debug) run_in_project "$project_root" "$use_nix" make compile-debug ;;
+      fxc) run_in_project "$project_root" "$use_nix" make compile-fxc ;;
+      stable) run_in_project "$project_root" "$use_nix" make compile ;;
+    esac
   else
     die "no Makefile found; compile manually or add project-specific support"
   fi

@@ -75,6 +75,12 @@ Compile the debug variant:
 make compile-debug
 ```
 
+Compile the FX-C variant:
+
+```sh
+make compile-fxc
+```
+
 Regenerate the active profile header after editing a profile:
 
 ```sh
@@ -113,6 +119,18 @@ Prepare an Arduboy FX catalog entry:
 
 ```sh
 make fx-entry
+```
+
+Prepare an Arduboy FX-C catalog entry:
+
+```sh
+make fx-entry-fxc
+```
+
+Create a release-ready `.arduboy` package:
+
+```sh
+make package-arduboy ARDUBOY_VERSION=dev
 ```
 
 Run the project-local deploy helper:
@@ -163,6 +181,8 @@ tools/pet-studio/audio_tool.py --help
 - Prefer short functions and explicit game states over hidden global coupling.
 - Keep debug tooling behind `POCKET_PIXEL_DEBUG`; stable builds must not expose
   debug menus.
+- Keep future FX-C link-cable work behind `POCKET_PIXEL_FXC_LINK`; stable and
+  debug builds must compile without link dependencies or peer discovery work.
 - Treat hunger as derived from life below `MAX_LIFE`, not as an independently
   persisted status flag.
 
@@ -184,12 +204,21 @@ move toward focused modules:
 scene/action metadata are future cleanup targets. Refactor in small steps and
 compile between steps.
 
+Future FX-C multiplayer should live in focused `src/Link.*` files with no-op
+stubs for non-FX-C builds, following the shape tested in `../all-mens-morris`
+without directly coupling Pocket Pixel's pet gameplay to that game's turn
+protocol.
+
 ## FX Safety Policy
 
 `make upload` is intentionally guarded for `TARGET=fx`. For an Arduboy FX,
 generate catalog entries with `make fx-entry` and merge them into a backed-up
 flashcart image. Treat flashcart writing as replacing the full FX catalog unless
 the tooling proves it is doing a safe targeted update.
+
+For Arduboy FX-C, use `make compile-fxc` and `make fx-entry-fxc`. Keep FX-C
+backups under a separate path such as `backups/fxc/`; do not rebuild an FX-C
+flashcart image from a classic FX backup.
 
 ## Documentation
 
@@ -213,6 +242,7 @@ Before committing, normally run:
 nix flake check
 nix develop -c make compile
 nix develop -c make compile-debug
+nix develop -c make compile-fxc
 ```
 
 Use commit messages such as:

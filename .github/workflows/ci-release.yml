@@ -56,8 +56,14 @@ jobs:
       - name: Compile debug build
         run: make compile-debug
 
+      - name: Compile FX-C build
+        run: make compile-fxc
+
       - name: Prepare FX catalog entry
         run: make fx-entry
+
+      - name: Prepare FX-C catalog entry
+        run: make fx-entry-fxc
 
       - name: Package release artifacts
         shell: bash
@@ -65,13 +71,19 @@ jobs:
           set -euo pipefail
           version="${GITHUB_REF_NAME//\//-}"
           mkdir -p dist/release
+          make package-arduboy ARDUBOY_VERSION="${version}"
           cp build/stable/pocket-pixel.ino.hex \
             "dist/release/pocket-pixel-${version}.hex"
           cp build/debug/pocket-pixel.ino.hex \
             "dist/release/pocket-pixel-debug-${version}.hex"
+          cp build/fxc/pocket-pixel.ino.hex \
+            "dist/release/pocket-pixel-fxc-${version}.hex"
           tar -C dist -czf \
             "dist/release/pocket-pixel-fx-entry-${version}.tar.gz" \
-            fx-cart
+            fx-cart/99-Development
+          tar -C dist -czf \
+            "dist/release/pocket-pixel-fxc-entry-${version}.tar.gz" \
+            fx-cart/FX-C
           {
             echo "Pocket Pixel ${version}"
             echo
@@ -80,7 +92,10 @@ jobs:
             echo
             echo "Stable HEX: pocket-pixel-${version}.hex"
             echo "Debug HEX: pocket-pixel-debug-${version}.hex"
+            echo "FX-C HEX: pocket-pixel-fxc-${version}.hex"
+            echo ".arduboy package: pocket-pixel-${version}.arduboy"
             echo "FX catalog entry: pocket-pixel-fx-entry-${version}.tar.gz"
+            echo "FX-C catalog entry: pocket-pixel-fxc-entry-${version}.tar.gz"
           } > "dist/release/README-${version}.txt"
           (cd dist/release && sha256sum ./* > "SHA256SUMS-${version}.txt")
 

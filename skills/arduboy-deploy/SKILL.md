@@ -1,6 +1,6 @@
 ---
 name: arduboy-deploy
-description: Compile, package, and upload Arduboy projects. Use when Codex needs to build stable/debug Arduboy sketches, upload to a classic Arduboy over Arduino CLI, or update an Arduboy FX flashcart catalog entry from a backed-up/decompiled flashcart image without treating FX as a classic single-sketch upload target.
+description: Compile, package, and upload Arduboy projects. Use when Codex needs to build stable/debug/FX-C Arduboy sketches, create .arduboy packages, upload to a classic Arduboy over Arduino CLI, or update an Arduboy FX/FX-C flashcart catalog entry from a backed-up/decompiled flashcart image without treating FX as a classic single-sketch upload target.
 ---
 
 # Arduboy Deploy
@@ -13,13 +13,15 @@ skills/arduboy-deploy/scripts/arduboy-deploy.sh --help
 
 If the project has a Nix flake, run commands through `nix develop` unless the
 user asks otherwise. For Pocket Pixel, the project Makefile already knows how to
-build stable/debug variants.
+build stable/debug/FX-C variants and package `.arduboy` releases.
 
 ## Safety Rules
 
-- Never use classic Arduino upload for Arduboy FX catalog updates.
-- For Arduboy FX, require a flashcart backup and a decompiled flashcart
+- Never use classic Arduino upload for Arduboy FX or FX-C catalog updates.
+- For Arduboy FX or FX-C, require a flashcart backup and a decompiled flashcart
   directory before writing.
+- Keep classic FX and FX-C backup/decompile paths separate. Do not rebuild an
+  FX-C image from a classic FX backup.
 - Require an explicit catalog entry path, such as `3/6/6`, when replacing an FX
   game already in a catalog.
 - Require `--yes` for write operations.
@@ -45,6 +47,18 @@ Compile debug:
 skills/arduboy-deploy/scripts/arduboy-deploy.sh compile --build debug
 ```
 
+Compile FX-C:
+
+```sh
+skills/arduboy-deploy/scripts/arduboy-deploy.sh compile --build fxc
+```
+
+Create a `.arduboy` package:
+
+```sh
+make package-arduboy ARDUBOY_VERSION=dev
+```
+
 Upload to a classic Arduboy:
 
 ```sh
@@ -65,6 +79,13 @@ Back up an Arduboy FX flashcart:
 ```sh
 skills/arduboy-deploy/scripts/arduboy-deploy.sh fx-backup \
   --output backups/fx/flashcart-backup.bin
+```
+
+Back up an Arduboy FX-C flashcart:
+
+```sh
+skills/arduboy-deploy/scripts/arduboy-deploy.sh fx-backup \
+  --output backups/fxc/flashcart-backup.bin
 ```
 
 Decompile a backup image:
@@ -109,6 +130,16 @@ For this Pocket Pixel repository, the currently known FX catalog entry is
 `3/6/6`. The FX banner path should come from the active profile's
 `assets.banner` value. Pixel currently uses `assets/fx/banner.png`. Do not
 assume this entry for other projects or a different FX catalog image.
+
+The FX-C target is separate:
+
+```sh
+make compile-fxc
+make fx-entry-fxc
+```
+
+FX-C multiplayer is planned behind `POCKET_PIXEL_FXC_LINK`, but Pocket Pixel's
+stable/debug builds should stay independent of any link-cable dependency.
 
 The original full FX backup used during recovery was:
 

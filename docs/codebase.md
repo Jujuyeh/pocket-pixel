@@ -329,7 +329,11 @@ Local commands:
   project directories.
 - `make compile`: builds the stable HEX.
 - `make compile-debug`: builds the debug HEX.
+- `make compile-fxc`: builds the FX-C variant with `POCKET_PIXEL_FXC_LINK`.
 - `make fx-entry`: prepares `dist/fx-cart/...` with HEX and FX banner.
+- `make fx-entry-fxc`: prepares `dist/fx-cart/FX-C/...` for FX-C backups.
+- `make package-arduboy`: creates a release-ready `.arduboy` package under
+  `dist/release/`.
 - `make web-site`: prepares the static GitHub Pages player under `site/`.
 - `make libretro`: runs the stable build with RetroArch and Ardens.
 - `make libretro-debug`: runs the debug build.
@@ -361,10 +365,11 @@ On push and pull request:
 - Runs `make setup`.
 - Regenerates the active profile header.
 - Compiles stable and debug builds.
-- Prepares FX catalog entry.
+- Compiles the FX-C build reserved for link-cable work.
+- Prepares FX and FX-C catalog entries.
 - Uploads workflow artifacts.
 
-On pushes to `main` and version tags:
+On pushes to `main`:
 
 - Prepares the static Pages site.
 - Copies the stable HEX to `site/build/pocket-pixel-latest.hex`.
@@ -374,8 +379,17 @@ On pushes to `main` and version tags:
 On tags matching `v*`:
 
 - Publishes a GitHub Release.
-- Uploads stable HEX, debug HEX, FX entry tarball, release README, and SHA256
-  checksums.
+- Uploads stable HEX, debug HEX, FX-C HEX, `.arduboy` package, FX/FX-C entry
+  tarballs, release README, and SHA256 checksums.
+
+FX-C notes:
+
+- `BUILD=fxc` currently compiles the same gameplay with `POCKET_PIXEL_FXC_LINK`
+  defined. Link code should remain behind that macro.
+- Future multiplayer should live in `src/Link.*` with no-op stubs for stable and
+  debug builds.
+- Keep FX and FX-C backup/decompile/rebuild directories separate. A classic FX
+  image must not be reused as an FX-C base image.
 
 ## Licensing
 

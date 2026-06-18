@@ -18,9 +18,13 @@ RETROARCH_CONFIG ?= $(SKETCH_DIR)/config/retroarch/arduboy-clean.cfg
 FX_CART_DIR ?= $(DIST_DIR)/fx-cart
 FX_CATEGORY ?= 99-Development
 FX_GAME ?= 01-Pocket-Pixel
+ARDUBOY_VERSION ?= dev
+ARDUBOY_PACKAGE_SCRIPT ?= $(SKETCH_DIR)/tools/package-arduboy.py
 
 ELF := $(BUILD_DIR)/pocket-pixel.ino.elf
 HEX := $(BUILD_DIR)/pocket-pixel.ino.hex
+FXC_HEX := $(SKETCH_DIR)/build/fxc/pocket-pixel.ino.hex
+ARDUBOY_PACKAGE := $(DIST_DIR)/release/pocket-pixel-$(ARDUBOY_VERSION).arduboy
 AVR_SIZE ?= avr-size
 AVR_NM ?= avr-nm
 PET_STUDIO ?= $(SKETCH_DIR)/tools/pet-studio/index.html
@@ -34,16 +38,18 @@ WEB_SITE_SCRIPT ?= $(SKETCH_DIR)/tools/prepare-web-site.sh
 
 ifeq ($(BUILD),debug)
 ARDUINO_BUILD_FLAGS := --build-property compiler.cpp.extra_flags="-DPOCKET_PIXEL_DEBUG=1"
+else ifeq ($(BUILD),fxc)
+ARDUINO_BUILD_FLAGS := --build-property compiler.cpp.extra_flags="-DPOCKET_PIXEL_FXC_LINK=1"
 else ifeq ($(BUILD),stable)
 ARDUINO_BUILD_FLAGS :=
 else
-$(error BUILD must be stable or debug)
+$(error BUILD must be stable, debug, or fxc)
 endif
 
 export ARDUINO_DIRECTORIES_DATA := $(ARDUINO_DATA_DIR)
 export ARDUINO_DIRECTORIES_USER := $(SKETCH_DIR)/.arduino-sketchbook
 
-.PHONY: all setup compile compile-debug profile-header upload upload-sketch clean hex size size-debug symbols symbols-debug pet-studio asset-studio sprite-studio sprites-json audio-json check env sim cloud libretro libretro-debug fx-entry web-site
+.PHONY: all setup compile compile-debug compile-fxc profile-header upload upload-sketch clean hex size size-debug size-fxc symbols symbols-debug pet-studio asset-studio sprite-studio sprites-json audio-json check env sim cloud libretro libretro-debug fx-entry fx-entry-fxc package-arduboy web-site
 
 all: compile
 
@@ -56,12 +62,17 @@ setup:
 	$(ARDUINO_CLI) core update-index
 	$(ARDUINO_CLI) core install arduino:avr
 	$(ARDUINO_CLI) lib install Arduboy2 Arduboy-TinyFont ArduboyTones
+	rm -rf "$(SKETCH_DIR)/.arduino-sketchbook/libraries/ArduboyI2C"
+	$(ARDUINO_CLI) lib install --git-url https://github.com/sub1inear/ArduboyI2C.git#74d9e8d89111e6b19292d5c6e1ac576710137c5d
 
 compile:
 	$(ARDUINO_CLI) compile --fqbn $(FQBN) $(ARDUINO_BUILD_FLAGS) --build-path $(BUILD_DIR) $(SKETCH_DIR)
 
 compile-debug:
 	$(MAKE) compile BUILD=debug
+
+compile-fxc:
+	$(MAKE) compile BUILD=fxc
 
 profile-header:
 	$(PROFILE_TOOL) header $(PROFILE) --output $(PROFILE_HEADER)
@@ -90,6 +101,9 @@ size: compile
 
 size-debug:
 	$(MAKE) size BUILD=debug
+
+size-fxc:
+	$(MAKE) size BUILD=fxc
 
 symbols: compile
 	$(AVR_NM) --print-size --size-sort --radix=d "$(ELF)"
@@ -139,6 +153,23 @@ fx-entry: compile
 	@printf '%s\n' "$(FX_CART_DIR)/$(FX_CATEGORY)/$(FX_GAME).png"
 	@printf '%s\n' "Banner: $(FX_BANNER)"
 	@printf '%s\n' "Merge this into a backup of your existing FX cart before writing."
+
+fx-entry-fxc: compile-fxc
+	install -D "$(FXC_HEX)" "$(FX_CART_DIR)/FX-C/$(FX_CATEGORY)/$(FX_GAME).hex"
+	install -D "$(SKETCH_DIR)/$(FX_BANNER)" "$(FX_CART_DIR)/FX-C/$(FX_CATEGORY)/$(FX_GAME).png"
+	@printf '%s\n' "FX-C catalog entry prepared:"
+	@printf '%s\n' "$(FX_CART_DIR)/FX-C/$(FX_CATEGORY)/$(FX_GAME).hex"
+	@printf '%s\n' "$(FX_CART_DIR)/FX-C/$(FX_CATEGORY)/$(FX_GAME).png"
+	@printf '%s\n' "Banner: $(FX_BANNER)"
+	@printf '%s\n' "Merge this into an FX-C flashcart backup, not a classic FX backup."
+
+package-arduboy: compile
+	$(ARDUBOY_PACKAGE_SCRIPT) \
+		--hex "$(HEX)" \
+		--banner "$(SKETCH_DIR)/$(FX_BANNER)" \
+		--output "$(ARDUBOY_PACKAGE)" \
+		--version "$(ARDUBOY_VERSION)"
+	@printf '%s\n' "$(ARDUBOY_PACKAGE)"
 
 web-site: compile
 	$(WEB_SITE_SCRIPT) "$(HEX)"

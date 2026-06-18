@@ -11,6 +11,8 @@ cycle changes code, tooling, gameplay, save data, or Arduboy FX packaging.
 - Local RetroArch profile: `config/retroarch/arduboy-clean.cfg` keeps scaling
   integer and disables shaders/smoothing for a clean 1-bit image.
 - FX policy: guarded by default; catalog entries are generated separately.
+- FX-C policy: separate `BUILD=fxc` and `make fx-entry-fxc` path for the two
+  Arduboy FX-C units, reserved for future USB-C link-cable multiplayer.
 - Main entrypoint: `pocket-pixel.ino`.
 - Main loop and gameplay flow: `src/Game.cpp`.
 - Active personality interface: `src/Personality.h`.
@@ -30,15 +32,22 @@ cycle changes code, tooling, gameplay, save data, or Arduboy FX packaging.
 Last measured stable build:
 
 ```text
-Sketch uses 26784 bytes (93%) of program storage space.
-Global variables use 1604 bytes (62%) of dynamic memory.
+Sketch uses 25504 bytes (88%) of program storage space.
+Global variables use 1556 bytes (60%) of dynamic memory.
 ```
 
 Last measured debug build:
 
 ```text
-Sketch uses 28174 bytes (98%) of program storage space.
-Global variables use 1720 bytes (67%) of dynamic memory.
+Sketch uses 26656 bytes (92%) of program storage space.
+Global variables use 1598 bytes (62%) of dynamic memory.
+```
+
+Last measured FX-C build:
+
+```text
+Sketch uses 25504 bytes (88%) of program storage space.
+Global variables use 1556 bytes (60%) of dynamic memory.
 ```
 
 Size tooling:
@@ -46,6 +55,7 @@ Size tooling:
 ```sh
 nix develop -c make size
 nix develop -c make size-debug
+nix develop -c make size-fxc
 nix develop -c make symbols
 ```
 
@@ -142,8 +152,62 @@ For each meaningful development cycle:
   smooth laser/cat lane movement, 12x12 obstacle sprites, score reset on hit,
   and completion at 16 passed obstacles.
 - [x] Hardware-tested Walk and accepted the current behavior.
+- [x] Added a GitHub Pages web player and release pipeline for public builds.
 
-## Current Cycle: Clean Polish And Main UI
+## Current Cycle: FX-C Target And Release Packaging
+
+Goal: make Pocket Pixel ready for Arduboy FX-C testing and cleaner public
+release artifacts before implementing any link-cable gameplay.
+
+1. [x] Add `BUILD=fxc`, `make compile-fxc`, and `make size-fxc`.
+2. [x] Add `make fx-entry-fxc` under `dist/fx-cart/FX-C/...` so FX-C catalog
+   entries cannot be confused with classic FX entries.
+3. [x] Add a release-ready `.arduboy` package generator.
+4. [x] Update CI release artifacts to include FX-C HEX, FX-C entry tarball, and
+   `.arduboy`.
+5. [x] Document that FX and FX-C backups are separate and not interchangeable.
+6. [x] Measure stable/debug/FX-C memory on this branch and decide how much room
+   remains for one more minigame or a first multiplayer slice.
+7. [ ] Design the Pocket Pixel link protocol before porting code from All Men's
+   Morris.
+
+Nix follow-up notes:
+
+- `make setup` now installs the pinned `ArduboyI2C` revision needed for future
+  FX-C link builds. This still happens through Arduino CLI network setup.
+- A future Nix hardening pass should move Arduino core/library provisioning out
+  of ad-hoc `make setup`, or wrap it as fixed-output derivations, before we rely
+  on FX-C multiplayer in CI.
+- No new runtime Nix package is needed for `.arduboy` packaging; it uses Python
+  standard-library `zipfile`.
+
+Space expectation after measurement:
+
+- Stable and FX-C currently leave 3,168 bytes of flash and 1,004 bytes of RAM.
+- Debug leaves 2,016 bytes of flash and 962 bytes of RAM.
+- A small minigame is feasible if it reuses sprites/procedural drawing and does
+  not add large bitmaps or broad shared abstractions.
+- A first FX-C multiplayer slice is feasible only if it starts as compact peer
+  discovery plus one tiny interaction; full visit gameplay should be budgeted
+  after the link layer is measured.
+
+Verification:
+
+```sh
+nix flake check
+nix develop -c make compile
+nix develop -c make compile-debug
+nix develop -c make compile-fxc
+nix develop -c make package-arduboy ARDUBOY_VERSION=dev
+```
+
+Expected commit type:
+
+```text
+build: add fxc release target
+```
+
+## Completed Cycle: Clean Polish And Main UI
 
 Goal: polish the existing care surface before adding deeper personality
 systems, starting with the Clean minigame and then the main-screen UI.

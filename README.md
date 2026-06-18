@@ -28,11 +28,18 @@ Build the debug variant:
 make compile-debug
 ```
 
+Build the Arduboy FX-C variant reserved for future link-cable work:
+
+```sh
+make compile-fxc
+```
+
 Inspect AVR memory usage for the stable or debug build:
 
 ```sh
 make size
 make size-debug
+make size-fxc
 ```
 
 List symbols ordered by size when looking for RAM or flash targets:
@@ -125,6 +132,18 @@ Prepare a catalog entry for later merge into an FX flashcart:
 make fx-entry
 ```
 
+Prepare the matching Arduboy FX-C catalog entry:
+
+```sh
+make fx-entry-fxc
+```
+
+Build a distributable `.arduboy` package:
+
+```sh
+make package-arduboy ARDUBOY_VERSION=v0.2.0
+```
+
 ## Web Player
 
 The GitHub Pages build serves `site/`, a custom Arduboy shell around the Ardens
@@ -147,9 +166,9 @@ feature request: https://github.com/tiberiusbrown/Ardens/issues/147.
 
 ## Releases
 
-GitHub Actions builds the stable HEX, debug HEX, and Arduboy FX catalog entry on
-pushes and pull requests. Pushes to `main` and version tags also publish the
-GitHub Pages web player.
+GitHub Actions builds the stable HEX, debug HEX, FX-C HEX, Arduboy FX catalog
+entry, FX-C catalog entry, and `.arduboy` package on pushes and pull requests.
+Pushes to `main` publish the GitHub Pages web player.
 
 Create a public GitHub Release by pushing a version tag:
 
@@ -162,7 +181,11 @@ The release workflow uploads:
 
 - `pocket-pixel-<tag>.hex`: stable Arduboy build.
 - `pocket-pixel-debug-<tag>.hex`: debug build with the debug menu enabled.
+- `pocket-pixel-fxc-<tag>.hex`: FX-C build reserved for link-cable support.
+- `pocket-pixel-<tag>.arduboy`: package for loaders/emulators that accept the
+  Arduboy package format.
 - `pocket-pixel-fx-entry-<tag>.tar.gz`: FX catalog entry with HEX and banner.
+- `pocket-pixel-fxc-entry-<tag>.tar.gz`: FX-C catalog entry with HEX and banner.
 - `SHA256SUMS-<tag>.txt`: checksums for release artifacts.
 
 For Arduboy FX, merge the FX catalog entry into a backed-up flashcart image.
@@ -225,6 +248,7 @@ pocket-pixel/
 |   `-- generated/
 |       `-- ActivePersonalityProfile.h
 `-- tools/
+    |-- package-arduboy.py        Release .arduboy package generator
     `-- pet-studio/               Profile-aware sprite/audio/profile editor
 ```
 
