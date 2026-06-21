@@ -384,12 +384,24 @@ On tags matching `v*`:
 
 FX-C notes:
 
-- `BUILD=fxc` currently compiles the same gameplay with `POCKET_PIXEL_FXC_LINK`
-  defined. Link code should remain behind that macro.
-- Future multiplayer should live in `src/Link.*` with no-op stubs for stable and
-  debug builds.
+- `BUILD=fxc` compiles the link-cable build with `POCKET_PIXEL_FXC_LINK`
+  defined.
+- `src/Link.*` contains the compact ArduboyI2C packet layer. Non-FX-C builds
+  compile no-op stubs so stable/debug do not pay for I2C.
+- The first FX-C multiplayer slice is Air Hockey. The host console simulates
+  puck physics and score; the peer sends local input and accepts authoritative
+  state. Each screen draws only its local pet; the puck and score are shared
+  across the two linked screens.
+- To keep the FX-C build under the flash limit while preserving the custom boot
+  animation, FX-C draws the Play minigame background procedurally instead of
+  using the large bitmap background.
 - Keep FX and FX-C backup/decompile/rebuild directories separate. A classic FX
   image must not be reused as an FX-C base image.
+- `tools/fxc-flash.py` is the project-local port-aware backup/write wrapper for
+  two connected FX-C units.
+- `tools/fxc-insert-entry.py` appends Pocket Pixel as a first-time catalog
+  entry in a decompiled FX-C backup before running the upstream flashcart
+  builder.
 
 ## Licensing
 

@@ -59,6 +59,7 @@ env:
 	@$(ARDUINO_CLI) lib list
 
 setup:
+	$(ARDUINO_CLI) config set library.enable_unsafe_install true
 	$(ARDUINO_CLI) core update-index
 	$(ARDUINO_CLI) core install arduino:avr
 	$(ARDUINO_CLI) lib install Arduboy2 Arduboy-TinyFont ArduboyTones

@@ -6,6 +6,7 @@
 #include "Assets.h"
 #include "Render.h"
 #include "Debug.h"
+#include "Link.h"
 
 #include <Arduboy2.h>
 #include <Tinyfont.h>
@@ -20,6 +21,7 @@ void dirty(int16_t dx);
 void scratching();
 void updateScratchSirenLed();
 void closeEyes(int16_t dx = 0);
+void clearZZZ();
 
 /************************************ GAME ************************************/
 
@@ -29,7 +31,8 @@ enum GAME_STATE {
   PLAY,
   CLEAN,
   WALK,
-  WATER
+  WATER,
+  AIR_HOCKEY
 } state = IDLE;
 
 enum MenuAction : uint8_t {
@@ -146,6 +149,22 @@ constexpr uint8_t WALK_SPAWN_MIN_FRAMES = framesAtGameFps(7);
 constexpr uint8_t WALK_SPAWN_MAX_FRAMES = framesAtGameFps(13);
 constexpr uint8_t WALK_HIT_FLASH_FRAMES = framesAtGameFps(4);
 constexpr uint8_t WALK_COIN_FEEDBACK_FRAMES = framesAtGameFps(8);
+#ifdef POCKET_PIXEL_FXC_LINK
+constexpr uint8_t HOCKEY_SCORE_REQUIRED = 4;
+constexpr uint8_t HOCKEY_SUBPX_BITS = 4;
+constexpr int16_t HOCKEY_UNIT = 1 << HOCKEY_SUBPX_BITS;
+constexpr uint8_t HOCKEY_PUCK_R = 2;
+constexpr uint8_t HOCKEY_CAT_BOTTOM_Y = 63;
+constexpr uint8_t HOCKEY_CAT_REST_FRAME = 0;
+constexpr uint8_t HOCKEY_CAT_STRIKE_FRAMES = framesAtGameFps(5);
+constexpr uint8_t HOCKEY_ROUND_PAUSE_FRAMES = framesAtGameFps(18);
+constexpr uint8_t HOCKEY_FLASH_FRAMES = framesAtGameFps(4);
+constexpr uint8_t HOCKEY_EXIT_HOLD_FRAMES = framesAtGameFps(30);
+constexpr uint8_t HOCKEY_MIN_SPEED_Y = 17;
+constexpr uint8_t HOCKEY_MAX_SPEED_Y = 34;
+constexpr uint8_t HOCKEY_PADDLE_Y_HOST = 114;
+constexpr uint8_t HOCKEY_PADDLE_Y_CLIENT = 13;
+#endif
 constexpr uint8_t BOOT_LOGO_X = 52;
 constexpr uint8_t BOOT_LOGO_Y = 26;
 constexpr uint8_t BOOT_DUST_START_FRAMES = framesAtGameFps(20);
@@ -263,6 +282,28 @@ struct WalkMinigame {
     WalkObstacle obstacles[WALK_OBSTACLE_COUNT];
 };
 
+#ifdef POCKET_PIXEL_FXC_LINK
+struct AirHockeyMinigame {
+    bool initialized = false;
+    bool host = true;
+    uint8_t localX = 48;
+    uint8_t remoteX = 48;
+    bool localStrike = false;
+    bool remoteStrike = false;
+    uint8_t localStrikeFrames = 0;
+    uint8_t hostScore = 0;
+    uint8_t clientScore = 0;
+    int16_t puckXSubpx = 64 * HOCKEY_UNIT;
+    int16_t puckYSubpx = 64 * HOCKEY_UNIT;
+    int8_t puckVx = 3;
+    int8_t puckVy = 18;
+    uint8_t roundPauseFrames = HOCKEY_ROUND_PAUSE_FRAMES;
+    uint8_t flashFrames = 0;
+    uint8_t scoreFlashFrames = HOCKEY_ROUND_PAUSE_FRAMES;
+    uint8_t exitHoldFrames = 0;
+};
+#endif
+
 const uint8_t POOP_SHAPES[3][POOP_HEIGHT] = {
     {0b00000000, 0b01111000, 0b11111100, 0b11111110, 0b01111100, 0b00000000},
     {0b00000000, 0b00111100, 0b11111110, 0b11111100, 0b01111000, 0b00000000},
@@ -302,6 +343,9 @@ FeedMinigame feedGame;
 PlayMinigame playGame;
 WaterMinigame waterGame;
 WalkMinigame walkGame;
+#ifdef POCKET_PIXEL_FXC_LINK
+AirHockeyMinigame hockeyGame;
+#endif
 
 struct ToolOverlay {
     bool valid = false;
@@ -804,6 +848,16 @@ void resetWalkMinigame() {
     walkGame = WalkMinigame();
 }
 
+#ifdef POCKET_PIXEL_FXC_LINK
+void resetAirHockeyMinigame() {
+    hockeyGame = AirHockeyMinigame();
+}
+
+bool linkIdleActive() {
+    return state == IDLE && linkPeerAvailable();
+}
+#endif
+
 uint8_t feedBowlX() {
     return feedGame.bowlXSubpx >> FEED_BOWL_FRAC_BITS;
 }
@@ -910,6 +964,229 @@ void initWalkMinigame() {
     walkGame.initialized = true;
     walkGame.spawnCooldown = framesAtGameFps(6);
 }
+
+#ifdef POCKET_PIXEL_FXC_LINK
+uint8_t hockeyMobilityStep() {
+    return 2 + (100 - ActivePersonality.playfulness) / 40;
+}
+
+uint8_t hockeyReachBonus() {
+    return 2 + ActivePersonality.playfulness / 35;
+}
+
+uint8_t hockeyPowerBonus() {
+    return 2 + ActivePersonality.playfulness / 30;
+}
+
+uint8_t hockeyCatFrame(bool striking, uint8_t frames) {
+    if (!striking) {
+        return HOCKEY_CAT_REST_FRAME;
+    }
+    if (frames < framesAtGameFps(2)) {
+        return 1;
+    }
+    return 2;
+}
+
+const uint8_t *hockeyCatSprite(bool striking, uint8_t frames) {
+    switch (hockeyCatFrame(striking, frames))
+    {
+    case 1:
+        return playCatPaw_1;
+    case 2:
+        return playCatPaw_2;
+    case 0:
+    default:
+        return playCatPaw_0;
+    }
+}
+
+const uint8_t *hockeyCatMask(bool striking, uint8_t frames) {
+    switch (hockeyCatFrame(striking, frames))
+    {
+    case 1:
+        return playCatPawMask_1;
+    case 2:
+        return playCatPawMask_2;
+    case 0:
+    default:
+        return playCatPawMask_0;
+    }
+}
+
+uint8_t hockeyCatWidth(bool striking, uint8_t frames) {
+    return pgm_read_byte(hockeyCatSprite(striking, frames));
+}
+
+void resetHockeyRound(bool hostServes) {
+    hockeyGame.puckXSubpx = (56 + random(0, 17)) * HOCKEY_UNIT;
+    hockeyGame.puckYSubpx = 64 * HOCKEY_UNIT;
+    hockeyGame.puckVx = random(0, 2) == 0 ? -5 : 5;
+    hockeyGame.puckVy = hostServes ? HOCKEY_MIN_SPEED_Y : -HOCKEY_MIN_SPEED_Y;
+    hockeyGame.roundPauseFrames = HOCKEY_ROUND_PAUSE_FRAMES;
+    hockeyGame.scoreFlashFrames = HOCKEY_ROUND_PAUSE_FRAMES;
+}
+
+void initAirHockeyMinigame() {
+    resetAirHockeyMinigame();
+    hockeyGame.initialized = true;
+    hockeyGame.host = linkLocalIsHost();
+    hockeyGame.localX = 48;
+    hockeyGame.remoteX = 48;
+    if (hockeyGame.host) {
+        resetHockeyRound(random(0, 2) == 0);
+    }
+}
+
+void finishAirHockeyMinigame() {
+    addXpTenths(3);
+    hurtPet(2);
+    sound.tones(feedDone);
+    saveGame();
+    resetAirHockeyMinigame();
+    arduboy.invert(false);
+    setState(IDLE);
+}
+
+void updateHockeyLocalInput() {
+    hockeyGame.localStrike = arduboy.pressed(B_BUTTON);
+    if (hockeyGame.localStrike) {
+        if (hockeyGame.localStrikeFrames < HOCKEY_CAT_STRIKE_FRAMES) {
+            hockeyGame.localStrikeFrames++;
+        }
+        return;
+    }
+
+    hockeyGame.localStrikeFrames = 0;
+    uint8_t step = hockeyMobilityStep();
+    if (arduboy.pressed(LEFT_BUTTON) && hockeyGame.localX > step) {
+        hockeyGame.localX -= step;
+    }
+    if (arduboy.pressed(RIGHT_BUTTON)) {
+        uint8_t w = hockeyCatWidth(false, 0);
+        uint8_t maxX = 127 - w;
+        hockeyGame.localX = hockeyGame.localX + step > maxX ? maxX : hockeyGame.localX + step;
+    }
+}
+
+bool hockeyPuckHitsPaddle(uint8_t paddleX, bool striking, bool hostSide) {
+    if (!striking) {
+        return false;
+    }
+    uint8_t width = hockeyCatWidth(true, HOCKEY_CAT_STRIKE_FRAMES);
+    int16_t puckX = hockeyGame.puckXSubpx / HOCKEY_UNIT;
+    int16_t puckY = hockeyGame.puckYSubpx / HOCKEY_UNIT;
+    uint8_t paddleY = hostSide ? HOCKEY_PADDLE_Y_HOST : HOCKEY_PADDLE_Y_CLIENT;
+    return puckX + HOCKEY_PUCK_R >= paddleX
+        && puckX <= static_cast<int16_t>(paddleX) + width
+        && abs(puckY - paddleY) <= 4 + hockeyReachBonus();
+}
+
+void hockeyBounceFromPaddle(uint8_t paddleX, bool hostSide) {
+    uint8_t width = hockeyCatWidth(true, HOCKEY_CAT_STRIKE_FRAMES);
+    int16_t puckX = hockeyGame.puckXSubpx / HOCKEY_UNIT;
+    int16_t center = paddleX + width / 2;
+    int16_t offset = puckX - center;
+    int8_t power = HOCKEY_MIN_SPEED_Y + hockeyPowerBonus();
+    hockeyGame.puckVx = constrain(offset, -18, 18);
+    hockeyGame.puckVy = hostSide ? -power : power;
+    sound.tones(feedCatch);
+}
+
+void hockeyPoint(bool hostScored) {
+    if (hostScored) {
+        hockeyGame.hostScore++;
+    } else {
+        hockeyGame.clientScore++;
+    }
+    hockeyGame.flashFrames = HOCKEY_FLASH_FRAMES;
+    sound.tones(feedBad);
+    resetHockeyRound(hostScored);
+}
+
+void updateHockeyHostPhysics() {
+    LinkInput remoteInput;
+    if (linkConsumeInput(remoteInput)) {
+        hockeyGame.remoteX = remoteInput.x;
+        hockeyGame.remoteStrike = remoteInput.strike;
+    }
+
+    if (hockeyGame.roundPauseFrames > 0) {
+        hockeyGame.roundPauseFrames--;
+        return;
+    }
+
+    hockeyGame.puckXSubpx += hockeyGame.puckVx;
+    hockeyGame.puckYSubpx += hockeyGame.puckVy;
+
+    int16_t puckX = hockeyGame.puckXSubpx / HOCKEY_UNIT;
+    if (puckX <= HOCKEY_PUCK_R || puckX >= 127 - HOCKEY_PUCK_R) {
+        hockeyGame.puckVx = -hockeyGame.puckVx;
+        hockeyGame.puckXSubpx = constrain(hockeyGame.puckXSubpx, HOCKEY_PUCK_R * HOCKEY_UNIT, (127 - HOCKEY_PUCK_R) * HOCKEY_UNIT);
+    }
+
+    if (hockeyGame.puckVy > 0
+        && hockeyPuckHitsPaddle(hockeyGame.localX, hockeyGame.localStrike, true)) {
+        hockeyBounceFromPaddle(hockeyGame.localX, true);
+    } else if (hockeyGame.puckVy < 0
+        && hockeyPuckHitsPaddle(hockeyGame.remoteX, hockeyGame.remoteStrike, false)) {
+        hockeyBounceFromPaddle(hockeyGame.remoteX, false);
+    }
+
+    int16_t puckY = hockeyGame.puckYSubpx / HOCKEY_UNIT;
+    if (puckY > 127 + HOCKEY_PUCK_R) {
+        hockeyPoint(false);
+    } else if (puckY < -HOCKEY_PUCK_R) {
+        hockeyPoint(true);
+    }
+
+    if (abs(hockeyGame.puckVy) < HOCKEY_MIN_SPEED_Y) {
+        hockeyGame.puckVy = hockeyGame.puckVy < 0 ? -HOCKEY_MIN_SPEED_Y : HOCKEY_MIN_SPEED_Y;
+    }
+    hockeyGame.puckVy = constrain(hockeyGame.puckVy, -HOCKEY_MAX_SPEED_Y, HOCKEY_MAX_SPEED_Y);
+}
+
+void syncHockeyState() {
+    if (hockeyGame.host) {
+        LinkState statePacket = {};
+        statePacket.hostX = hockeyGame.localX;
+        statePacket.clientX = hockeyGame.remoteX;
+        statePacket.hostScore = hockeyGame.hostScore;
+        statePacket.clientScore = hockeyGame.clientScore;
+        statePacket.puckX = constrain(hockeyGame.puckXSubpx / HOCKEY_UNIT, 0, 127);
+        statePacket.puckY = constrain(hockeyGame.puckYSubpx / HOCKEY_UNIT, 0, 127);
+        statePacket.flags = (hockeyGame.roundPauseFrames > 0 ? 1 : 0)
+            | (hockeyGame.flashFrames > 0 ? 2 : 0);
+        linkSendState(statePacket);
+    } else {
+        linkSendInput(hockeyGame.localX, hockeyGame.localStrike);
+        LinkState statePacket;
+        if (linkConsumeState(statePacket)) {
+            hockeyGame.remoteX = statePacket.hostX;
+            hockeyGame.hostScore = statePacket.hostScore;
+            hockeyGame.clientScore = statePacket.clientScore;
+            hockeyGame.puckXSubpx = statePacket.puckX * HOCKEY_UNIT;
+            hockeyGame.puckYSubpx = statePacket.puckY * HOCKEY_UNIT;
+            hockeyGame.roundPauseFrames = (statePacket.flags & 1) ? HOCKEY_ROUND_PAUSE_FRAMES : 0;
+            hockeyGame.flashFrames = (statePacket.flags & 2) ? HOCKEY_FLASH_FRAMES : 0;
+        }
+    }
+}
+
+void updateAirHockeyMinigame() {
+    updateHockeyLocalInput();
+    if (hockeyGame.host) {
+        updateHockeyHostPhysics();
+    }
+    if (hockeyGame.flashFrames > 0) {
+        hockeyGame.flashFrames--;
+    }
+    if (hockeyGame.scoreFlashFrames > 0) {
+        hockeyGame.scoreFlashFrames--;
+    }
+    syncHockeyState();
+}
+#endif
 
 // Food units are half-heart units; the bowl starts at the current saved hunger.
 uint8_t feedLifeFromUnits() {
@@ -1639,7 +1916,12 @@ void drawPlayFeedback() {
 }
 
 void drawPlayMinigame() {
+#if defined(POCKET_PIXEL_FXC_LINK) || defined(POCKET_PIXEL_DEBUG)
+    arduboy.drawRect(0, 0, 128, 54, BLACK);
+    arduboy.drawFastVLine(64, 0, 54, BLACK);
+#else
     Sprites::drawOverwrite(0, 0, playBackground, 0);
+#endif
     uint8_t handFrame = playGame.handPhase == PLAY_HAND_OUT ? playHandFrame() : 0;
     drawMaskedSprite(playHand, playHandMask, handFrame, playHandX(), PLAY_HAND_Y);
     drawMaskedSpriteBottomLeft(playCatSprite(), playCatMask(), PLAY_CAT_ANCHOR_X + playCatOffsetX(), PLAY_CAT_ANCHOR_Y);
@@ -1657,6 +1939,59 @@ void drawPlayMinigame() {
     bool invertFrame = playGame.flashFrames > 0 && ((playGame.flashFrames / FPS_SCALE) & 1) == 0;
     arduboy.invert(invertFrame);
 }
+
+#ifdef POCKET_PIXEL_FXC_LINK
+int16_t hockeyScreenPuckY() {
+    int16_t globalY = hockeyGame.puckYSubpx / HOCKEY_UNIT;
+    return hockeyGame.host ? globalY - 64 : 63 - globalY;
+}
+
+uint8_t hockeyLocalScore() {
+    return hockeyGame.host ? hockeyGame.hostScore : hockeyGame.clientScore;
+}
+
+uint8_t hockeyRemoteScore() {
+    return hockeyGame.host ? hockeyGame.clientScore : hockeyGame.hostScore;
+}
+
+void drawHockeyRink() {
+    arduboy.drawRect(0, 0, 128, 64, BLACK);
+    arduboy.drawFastHLine(0, 31, 128, BLACK);
+}
+
+void drawHockeyCat(uint8_t x, uint8_t bottomY, bool strike, uint8_t strikeFrames) {
+    drawMaskedSpriteBottomLeft(
+        hockeyCatSprite(strike, strikeFrames),
+        hockeyCatMask(strike, strikeFrames),
+        x,
+        bottomY);
+}
+
+void drawHockeyPuck() {
+    int16_t puckX = hockeyGame.puckXSubpx / HOCKEY_UNIT;
+    int16_t puckY = hockeyScreenPuckY();
+    if (puckY < -HOCKEY_PUCK_R || puckY > 63 + HOCKEY_PUCK_R) {
+        return;
+    }
+    arduboy.fillCircle(puckX, puckY, HOCKEY_PUCK_R, BLACK);
+}
+
+void drawAirHockeyMinigame() {
+    drawHockeyRink();
+    drawHockeyPuck();
+    drawHockeyCat(hockeyGame.localX, HOCKEY_CAT_BOTTOM_Y, hockeyGame.localStrike, hockeyGame.localStrikeFrames);
+
+    bool showScore = hockeyGame.scoreFlashFrames == 0 || ((hockeyGame.scoreFlashFrames / FPS_SCALE) & 1) == 0;
+    if (showScore) {
+        tinyfont.setCursor(4, 4);
+        tinyfont.print(hockeyLocalScore());
+        tinyfont.print("-");
+        tinyfont.print(hockeyRemoteScore());
+    }
+    bool invertFrame = hockeyGame.flashFrames > 0 && ((hockeyGame.flashFrames / FPS_SCALE) & 1) == 0;
+    arduboy.invert(invertFrame);
+}
+#endif
 
 void updateFeedMinigame() {
     if (arduboy.pressed(LEFT_BUTTON)) {
@@ -1957,6 +2292,11 @@ void setState(GAME_STATE status) {
     if (status == WATER) {
         resetWaterMinigame();
     }
+#ifdef POCKET_PIXEL_FXC_LINK
+    if (status == AIR_HOCKEY) {
+        resetAirHockeyMinigame();
+    }
+#endif
     if (state == FEED && status != FEED) {
         arduboy.invert(false);
     }
@@ -1969,6 +2309,11 @@ void setState(GAME_STATE status) {
     if (state == WATER && status != WATER) {
         arduboy.digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF);
     }
+#ifdef POCKET_PIXEL_FXC_LINK
+    if (state == AIR_HOCKEY && status != AIR_HOCKEY) {
+        arduboy.invert(false);
+    }
+#endif
     state = status;
 }
 
@@ -2060,6 +2405,43 @@ void play() {
 
     drawPlayMinigame();
 }
+
+#ifdef POCKET_PIXEL_FXC_LINK
+void airHockey() {
+    if (!linkPeerAvailable()) {
+        resetAirHockeyMinigame();
+        arduboy.invert(false);
+        setState(IDLE);
+        return;
+    }
+
+    if (!hockeyGame.initialized) {
+        initAirHockeyMinigame();
+    }
+
+    if (arduboy.pressed(A_BUTTON)) {
+        if (hockeyGame.exitHoldFrames < HOCKEY_EXIT_HOLD_FRAMES) {
+            hockeyGame.exitHoldFrames++;
+        }
+        if (hockeyGame.exitHoldFrames >= HOCKEY_EXIT_HOLD_FRAMES) {
+            resetAirHockeyMinigame();
+            arduboy.invert(false);
+            setState(IDLE);
+            return;
+        }
+    } else {
+        hockeyGame.exitHoldFrames = 0;
+    }
+
+    updateAirHockeyMinigame();
+    if (hockeyGame.hostScore >= HOCKEY_SCORE_REQUIRED || hockeyGame.clientScore >= HOCKEY_SCORE_REQUIRED) {
+        finishAirHockeyMinigame();
+        return;
+    }
+
+    drawAirHockeyMinigame();
+}
+#endif
 
 void clean() {
     if (!cleanFlag(CLEAN_INITIALIZED)) {
@@ -2184,6 +2566,18 @@ uint8_t menuMelodyIndex = 0;
 bool idleMenuOpen = false;
 int16_t idleMenuX = MENU_CLOSED_X;
 
+#ifdef POCKET_PIXEL_FXC_LINK
+void prepareLinkedIdle() {
+    if (!linkIdleActive()) {
+        return;
+    }
+    petUnset(SLEEPING);
+    petUnset(SCRATCHING);
+    clearZZZ();
+    idleMenuOpen = false;
+}
+#endif
+
 int16_t idleMenuTargetX() {
     return idleMenuOpen ? MENU_OPEN_X : MENU_CLOSED_X;
 }
@@ -2227,6 +2621,17 @@ uint8_t idleXpWidth() {
 
     return width;
 }
+
+#ifdef POCKET_PIXEL_FXC_LINK
+void drawLinkSurpriseMark(int16_t petX) {
+    if (((frameCounter / framesAtGameFps(5)) & 1) != 0) {
+        return;
+    }
+    uint8_t x = petX + 19;
+    arduboy.drawFastVLine(x, 12, 5, BLACK);
+    arduboy.drawPixel(x, 19, BLACK);
+}
+#endif
 
 // Menu movement walks through a profile-defined melody one note at a time.
 void playMenuMoveTone() {
@@ -2503,7 +2908,26 @@ void randomEmotion() {
 }
 
 void idle() {
+#ifdef POCKET_PIXEL_FXC_LINK
+    if (linkConsumeInvite()) {
+        prepareLinkedIdle();
+        setState(AIR_HOCKEY);
+        return;
+    }
+    prepareLinkedIdle();
+    bool linkedIdle = linkIdleActive();
+    if (linkedIdle && arduboy.justPressed(A_BUTTON)) {
+        linkSendInvite();
+        setState(AIR_HOCKEY);
+        return;
+    }
+#endif
     if (arduboy.justPressed(B_BUTTON)) {
+#ifdef POCKET_PIXEL_FXC_LINK
+        if (linkedIdle) {
+            return;
+        }
+#endif
         if (idleMenuOpen && idleMenuX == MENU_OPEN_X) {
             selectOption();
         } else {
@@ -2522,6 +2946,18 @@ void idle() {
         Sprites::drawOverwrite(petX, PET_IDLE_DRAW_Y, PET_IDLE1, 0);
     }
 
+#ifdef POCKET_PIXEL_FXC_LINK
+    if (linkedIdle) {
+        menu();
+        drawLifeBar(arduboy);
+        drawXpBar(arduboy, tinyfont, 2, idleXpWidth());
+        tinyfont.setCursor(45, 4);
+        tinyfont.print("A LINK");
+        drawLinkSurpriseMark(petX);
+        return;
+    }
+#endif
+
     if (arduboy.everyXFrames(framesAtGameFps(30))) {
         randomEmotion();
     }
@@ -2533,7 +2969,6 @@ void idle() {
         // Money HUD is hidden immediately once the menu begins opening.
         drawMoneyHud(tinyfont);
     }
-    
     bool sleeping = petHas(SLEEPING);
     if (sleeping) sleep(petDx);
     else {
@@ -2555,6 +2990,9 @@ void gameSetup() {
     tinyfont.setTextColor(BLACK);
     arduboy.fillScreen(WHITE);
     arduboy.initRandomSeed();
+#ifdef POCKET_PIXEL_FXC_LINK
+    linkBegin(random(1, 65535));
+#endif
     playBootAnimation();
     // Load after boot animation so EEPROM delay never happens on a blank screen.
     loadGame();
@@ -2568,6 +3006,9 @@ void gameLoop() {
         return;
     arduboy.pollButtons();
     frameCounter++;
+#ifdef POCKET_PIXEL_FXC_LINK
+    linkUpdate(state == IDLE || state == AIR_HOCKEY);
+#endif
     if (state != CLEAN) {
         // Clean owns the framebuffer for its litter canvas and redraws incrementally.
         arduboy.fillScreen(WHITE);
@@ -2599,6 +3040,11 @@ void gameLoop() {
     case WATER:
         water();
         break;
+#ifdef POCKET_PIXEL_FXC_LINK
+    case AIR_HOCKEY:
+        airHockey();
+        break;
+#endif
     
     default:
         break;

@@ -229,3 +229,22 @@ Invalid save data resets to the default recovered state:
 - The clean tool overlay backup must stay within its fixed page buffer. The
   tool drawing currently fits in a narrow vertical band around the cursor; do
   not increase the saved vertical bounds without increasing the backup storage.
+
+## FX-C Link Minigame
+
+`BUILD=fxc` adds a first link-cable Air Hockey minigame between two Arduboy
+FX-C units. When a peer is detected in idle, the pet wakes up, the normal care
+menu is blocked, a blinking `!` appears, and `A LINK` is shown. Press `A` on
+either unit to invite the other pet.
+
+Controls:
+
+- Left/right moves the pet horizontally.
+- Holding `B` lunges to return the puck.
+- The pet cannot move while lunging.
+- Hold `A` for 3 seconds to exit early.
+
+The match is first to 4 points. Each console draws only its own pet; the puck
+and score are shared across the two screens. The host console owns puck physics
+and score; the peer sends input and receives authoritative puck/score state. A
+completed match grants XP and makes the pet hungrier.

@@ -84,9 +84,32 @@ skills/arduboy-deploy/scripts/arduboy-deploy.sh fx-backup \
 Back up an Arduboy FX-C flashcart:
 
 ```sh
-skills/arduboy-deploy/scripts/arduboy-deploy.sh fx-backup \
+skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-backup \
+  --port /dev/ttyACM0 \
   --output backups/fxc/flashcart-backup.bin
 ```
+
+When two FX-C units are connected, use the port-aware FX-C commands instead of
+the original auto-detecting loader scripts:
+
+```sh
+skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-list-ports
+skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-backup \
+  --port /dev/ttyACM0 \
+  --output backups/fxc/pocket-pixel-unit-a.bin
+skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-decompile \
+  --image backups/fxc/pocket-pixel-unit-a.bin
+skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-build-image \
+  --backup-decompiled backups/fxc/pocket-pixel-unit-a \
+  --category 11
+skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-write-image \
+  --port /dev/ttyACM0 \
+  --image build/fxc-work/flashcart-fxc/flashcart-image.bin \
+  --yes
+```
+
+Use `fxc-build-image` for first-time installation: it appends a new `Pocket
+Pixel` entry to an existing category instead of replacing a numeric slot.
 
 Decompile a backup image:
 
@@ -138,8 +161,8 @@ make compile-fxc
 make fx-entry-fxc
 ```
 
-FX-C multiplayer is planned behind `POCKET_PIXEL_FXC_LINK`, but Pocket Pixel's
-stable/debug builds should stay independent of any link-cable dependency.
+FX-C multiplayer is compiled behind `POCKET_PIXEL_FXC_LINK`; Pocket Pixel's
+stable/debug builds must stay independent of any link-cable dependency.
 
 The original full FX backup used during recovery was:
 

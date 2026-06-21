@@ -18,6 +18,11 @@ Commands:
   fx-build-image      Build an FX image by replacing one decompiled entry.
   fx-write-image      Write an FX image with verification.
   fx-update-entry     Compile, rebuild one FX entry, and write with verification.
+  fxc-list-ports      List connected Arduboy/FX-C serial ports.
+  fxc-backup          Back up one FX-C flashcart by explicit serial port.
+  fxc-decompile       Decompile an FX-C flashcart backup image.
+  fxc-build-image     Insert Pocket Pixel into an FX-C backup and rebuild image.
+  fxc-write-image     Write an FX-C image by explicit serial port.
 
 Common options:
   --project-root DIR  Project directory. Default: current directory.
@@ -71,7 +76,7 @@ profile_asset() {
   local default="$5"
   python_cmd "$project_root" "$use_nix" \
     "$project_root/skills/pet-personality-profile/scripts/profile_tool.py" \
-    asset "$profile" "$asset" --default "$default"
+    asset "$profile" "$asset" --default "$default" | tail -n 1
 }
 
 python_cmd() {
@@ -102,6 +107,9 @@ loader_script() {
   local loader_dir="$1"
   local script="$2"
   local path="$loader_dir/Arduboy-Python-Utilities/$script"
+  if [ ! -f "$path" ] && [ -f "/tmp/Arduboy-Python-Utilities/$script" ]; then
+    path="/tmp/Arduboy-Python-Utilities/$script"
+  fi
   [ -f "$path" ] || die "missing loader script: $path"
   printf '%s\n' "$path"
 }
@@ -349,6 +357,134 @@ command_fx_update_entry() {
   command_fx_write_image "${write_args[@]}"
 }
 
+command_fxc_list_ports() {
+  local project_root="$PWD" use_nix=1
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --project-root) need_value "$@"; project_root="$2"; shift 2 ;;
+      --no-nix) use_nix=0; shift ;;
+      --help) printf 'Example: %s fxc-list-ports\n' "$SCRIPT_NAME"; return ;;
+      *) die "unknown option for fxc-list-ports: $1" ;;
+    esac
+  done
+  project_root="$(abs_path "$project_root")"
+  python_cmd "$project_root" "$use_nix" "$project_root/tools/fxc-flash.py" list
+}
+
+command_fxc_backup() {
+  local project_root="$PWD" port="" output="" use_nix=1
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --project-root) need_value "$@"; project_root="$2"; shift 2 ;;
+      --port) need_value "$@"; port="$2"; shift 2 ;;
+      --output) need_value "$@"; output="$2"; shift 2 ;;
+      --no-nix) use_nix=0; shift ;;
+      --help) printf 'Example: %s fxc-backup --port /dev/ttyACM0 --output backups/fxc/unit-a.bin\n' "$SCRIPT_NAME"; return ;;
+      *) die "unknown option for fxc-backup: $1" ;;
+    esac
+  done
+  [ -n "$port" ] || die "--port is required"
+  [ -n "$output" ] || output="backups/fxc/flashcart-backup-image-$(date +%Y%m%d-%H%M%S)-$(basename "$port").bin"
+  project_root="$(abs_path "$project_root")"
+  mkdir -p "$(dirname "$project_root/$output")"
+  python_cmd "$project_root" "$use_nix" "$project_root/tools/fxc-flash.py" backup --port "$port" --output "$output"
+}
+
+command_fxc_decompile() {
+  local project_root="$PWD" loader_dir="$DEFAULT_LOADER_DIR" image="" use_nix=1
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --project-root) need_value "$@"; project_root="$2"; shift 2 ;;
+      --loader-dir) need_value "$@"; loader_dir="$2"; shift 2 ;;
+      --image) need_value "$@"; image="$2"; shift 2 ;;
+      --no-nix) use_nix=0; shift ;;
+      --help) printf 'Example: %s fxc-decompile --image backups/fxc/unit-a.bin\n' "$SCRIPT_NAME"; return ;;
+      *) die "unknown option for fxc-decompile: $1" ;;
+    esac
+  done
+  [ -n "$image" ] || die "--image is required"
+  project_root="$(abs_path "$project_root")"
+  ensure_loader "$loader_dir"
+  python_cmd "$project_root" "$use_nix" "$(loader_script "$loader_dir" flashcart-decompiler.py)" "$image"
+}
+
+command_fxc_build_image() {
+  local project_root="$PWD" loader_dir="$DEFAULT_LOADER_DIR" build="fxc"
+  local backup_decompiled="" category="11" title="Pocket Pixel" banner="" output_dir="" hex="" profile="profiles/pixel.json" use_nix=1
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --project-root) need_value "$@"; project_root="$2"; shift 2 ;;
+      --loader-dir) need_value "$@"; loader_dir="$2"; shift 2 ;;
+      --build) need_value "$@"; build="$2"; shift 2 ;;
+      --backup-decompiled) need_value "$@"; backup_decompiled="$2"; shift 2 ;;
+      --category) need_value "$@"; category="$2"; shift 2 ;;
+      --title) need_value "$@"; title="$2"; shift 2 ;;
+      --banner) need_value "$@"; banner="$2"; shift 2 ;;
+      --profile) need_value "$@"; profile="$2"; shift 2 ;;
+      --output-dir) need_value "$@"; output_dir="$2"; shift 2 ;;
+      --hex) need_value "$@"; hex="$2"; shift 2 ;;
+      --no-nix) use_nix=0; shift ;;
+      --help) printf 'Example: %s fxc-build-image --backup-decompiled backups/fxc/unit-a --category 11\n' "$SCRIPT_NAME"; return ;;
+      *) die "unknown option for fxc-build-image: $1" ;;
+    esac
+  done
+  [ -n "$backup_decompiled" ] || die "--backup-decompiled is required"
+  project_root="$(abs_path "$project_root")"
+  ensure_loader "$loader_dir"
+  if [ -z "$banner" ]; then
+    banner="$(profile_asset "$project_root" "$use_nix" "$profile" banner assets/fx/banner.png)"
+  fi
+  command_compile --project-root "$project_root" --build "$build" $([ "$use_nix" = "0" ] && printf '%s' --no-nix)
+  if [ -z "$hex" ]; then
+    hex="$(find_hex "$project_root" "$build")"
+  fi
+  [ -n "$output_dir" ] || output_dir="build/fxc-work/flashcart-$build"
+
+  local src_dir="$backup_decompiled"
+  [ -d "$src_dir" ] || src_dir="$project_root/$backup_decompiled"
+  [ -d "$src_dir" ] || die "backup decompiled directory not found: $backup_decompiled"
+  local banner_path="$banner"
+  [ -f "$banner_path" ] || banner_path="$project_root/$banner"
+  local hex_path="$hex"
+  [ -f "$hex_path" ] || hex_path="$project_root/$hex"
+  local out="$project_root/$output_dir"
+
+  rm -rf "$out"
+  mkdir -p "$(dirname "$out")"
+  cp -a "$src_dir" "$out"
+  python_cmd "$project_root" "$use_nix" "$project_root/tools/fxc-insert-entry.py" \
+    --flashcart-dir "$out" \
+    --category "$category" \
+    --title "$title" \
+    --hex "$hex_path" \
+    --banner "$banner_path"
+  python_cmd "$project_root" "$use_nix" "$(loader_script "$loader_dir" flashcart-builder.py)" "$output_dir/flashcart-index.csv"
+  printf 'FX-C image: %s/flashcart-image.bin\n' "$out"
+}
+
+command_fxc_write_image() {
+  local project_root="$PWD" port="" image="" use_nix=1 yes=0
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      --project-root) need_value "$@"; project_root="$2"; shift 2 ;;
+      --port) need_value "$@"; port="$2"; shift 2 ;;
+      --image) need_value "$@"; image="$2"; shift 2 ;;
+      --no-nix) use_nix=0; shift ;;
+      --yes) yes=1; shift ;;
+      --help) printf 'Example: %s fxc-write-image --port /dev/ttyACM0 --image build/fxc-work/flashcart-fxc/flashcart-image.bin --yes\n' "$SCRIPT_NAME"; return ;;
+      *) die "unknown option for fxc-write-image: $1" ;;
+    esac
+  done
+  [ "$yes" = "1" ] || die "FX-C write requires --yes"
+  [ -n "$port" ] || die "--port is required"
+  [ -n "$image" ] || die "--image is required"
+  project_root="$(abs_path "$project_root")"
+  local image_path="$image"
+  [ -f "$image_path" ] || image_path="$project_root/$image"
+  [ -f "$image_path" ] || die "image not found: $image"
+  python_cmd "$project_root" "$use_nix" "$project_root/tools/fxc-flash.py" write --port "$port" --image "$image_path"
+}
+
 main() {
   [ "$#" -gt 0 ] || { usage; exit 0; }
   local command="$1"
@@ -362,6 +498,11 @@ main() {
     fx-build-image) command_fx_build_image "$@" ;;
     fx-write-image) command_fx_write_image "$@" ;;
     fx-update-entry) command_fx_update_entry "$@" ;;
+    fxc-list-ports) command_fxc_list_ports "$@" ;;
+    fxc-backup) command_fxc_backup "$@" ;;
+    fxc-decompile) command_fxc_decompile "$@" ;;
+    fxc-build-image) command_fxc_build_image "$@" ;;
+    fxc-write-image) command_fxc_write_image "$@" ;;
     --help|-h|help) usage ;;
     *) die "unknown command: $command" ;;
   esac

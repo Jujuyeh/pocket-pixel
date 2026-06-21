@@ -32,22 +32,22 @@ cycle changes code, tooling, gameplay, save data, or Arduboy FX packaging.
 Last measured stable build:
 
 ```text
-Sketch uses 25504 bytes (88%) of program storage space.
+Sketch uses 24770 bytes (86%) of program storage space.
 Global variables use 1556 bytes (60%) of dynamic memory.
 ```
 
 Last measured debug build:
 
 ```text
-Sketch uses 26656 bytes (92%) of program storage space.
+Sketch uses 25940 bytes (90%) of program storage space.
 Global variables use 1598 bytes (62%) of dynamic memory.
 ```
 
 Last measured FX-C build:
 
 ```text
-Sketch uses 25504 bytes (88%) of program storage space.
-Global variables use 1556 bytes (60%) of dynamic memory.
+Sketch uses 28644 bytes (99%) of program storage space.
+Global variables use 1647 bytes (64%) of dynamic memory.
 ```
 
 Size tooling:
@@ -168,8 +168,10 @@ release artifacts before implementing any link-cable gameplay.
 5. [x] Document that FX and FX-C backups are separate and not interchangeable.
 6. [x] Measure stable/debug/FX-C memory on this branch and decide how much room
    remains for one more minigame or a first multiplayer slice.
-7. [ ] Design the Pocket Pixel link protocol before porting code from All Men's
-   Morris.
+7. [x] Design and implement the first Pocket Pixel link protocol slice for Air
+   Hockey.
+8. [ ] Hardware-test Air Hockey on two FX-C units: linked idle wake, invite flow,
+   host/client orientation, puck crossing, score sync, and disconnect behavior.
 
 Nix follow-up notes:
 
@@ -183,13 +185,13 @@ Nix follow-up notes:
 
 Space expectation after measurement:
 
-- Stable and FX-C currently leave 3,168 bytes of flash and 1,004 bytes of RAM.
-- Debug leaves 2,016 bytes of flash and 962 bytes of RAM.
-- A small minigame is feasible if it reuses sprites/procedural drawing and does
-  not add large bitmaps or broad shared abstractions.
-- A first FX-C multiplayer slice is feasible only if it starts as compact peer
-  discovery plus one tiny interaction; full visit gameplay should be budgeted
-  after the link layer is measured.
+- Stable currently leaves 3,902 bytes of flash and 1,004 bytes of RAM.
+- Debug leaves 2,732 bytes of flash and 962 bytes of RAM.
+- FX-C with Air Hockey leaves 28 bytes of flash and 913 bytes of RAM.
+- More FX-C gameplay now requires optimization first; avoid large bitmaps and
+  broad abstractions.
+- The FX-C build keeps the custom boot animation, but uses a procedural Play
+  background to reserve enough flash for ArduboyI2C and Air Hockey.
 
 Verification:
 

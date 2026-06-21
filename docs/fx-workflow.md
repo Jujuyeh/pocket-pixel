@@ -69,6 +69,60 @@ replace the full catalog.
 Keep FX-C backups under a separate path such as `backups/fxc/`. Do not decompile
 or rebuild an FX-C catalog from a classic FX backup under `backups/fx/`.
 
+## Port-aware FX-C install flow
+
+The upstream flashcart scripts auto-detect the first Arduboy-compatible serial
+port. That is unsafe when two FX-C units are connected at the same time. Pocket
+Pixel therefore provides project-local wrappers that require explicit ports for
+backup and write:
+
+```sh
+skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-list-ports
+```
+
+For each connected FX-C, back up the exact unit:
+
+```sh
+skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-backup \
+  --port /dev/ttyACM0 \
+  --output backups/fxc/pocket-pixel-unit-a.bin
+```
+
+Then decompile that backup:
+
+```sh
+skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-decompile \
+  --image backups/fxc/pocket-pixel-unit-a.bin
+```
+
+For a first-time install, append Pocket Pixel to an existing category instead of
+replacing an unknown slot:
+
+```sh
+skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-build-image \
+  --backup-decompiled backups/fxc/pocket-pixel-unit-a \
+  --category 11
+```
+
+The default `--category 11` is a conservative development slot based on the
+current FX-C catalog structure observed during All Men's Morris and Pocket Pixel
+testing. On the first two Pocket Pixel FX-C backups this inserted the game as
+`11/12/12`, after verifying that no `Pocket Pixel` entry already existed.
+Inspect the decompiled title screens before changing this for a different
+catalog.
+
+Only after confirming the rebuilt image and backup path, write it back to the
+same unit:
+
+```sh
+skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-write-image \
+  --port /dev/ttyACM0 \
+  --image build/fxc-work/flashcart-fxc/flashcart-image.bin \
+  --yes
+```
+
+Repeat the backup/decompile/build/write flow separately for the second FX-C.
+
 ## Package a .arduboy file
 
 ```sh
@@ -104,24 +158,26 @@ FX flashcart replacement, not as a single-game patch.
 
 ## FX-C multiplayer planning
 
-Pocket Pixel does not yet include link-cable gameplay. The build target is in
-place so multiplayer can be added behind `POCKET_PIXEL_FXC_LINK` without
-affecting stable or debug builds.
+Pocket Pixel includes a first link-cable minigame in the FX-C build: Air
+Hockey. It is compiled behind `POCKET_PIXEL_FXC_LINK` and does not affect stable
+or debug builds. See `docs/fxc-air-hockey.md`.
 
-Recommended porting shape:
+Recommended next porting shape:
 
-1. Reuse the All Men's Morris `ArduboyI2C` approach as a reference, but design a
-   Pocket Pixel protocol around pet visits rather than turn-based moves.
+1. Keep using the All Men's Morris `ArduboyI2C` approach as a reference, but
+   keep Pocket Pixel packets specific to pet minigames and visits.
 2. Keep the link layer in focused `src/Link.*` files with no-op stable stubs.
-3. Exchange compact packets: protocol magic/version, nonce, packet kind, local
-   pet summary, visit request/accept, and small interaction events.
+3. Extend compact packets only when needed: protocol magic/version, nonce,
+   packet kind, local pet summary, visit request/accept, and small interaction
+   events.
 4. Keep peer discovery recoverable so a single FX-C without a peer never freezes.
 5. Measure `make size`, `make size-debug`, and `make size-fxc` before adding UI
    or minigame code.
 
-Initial expectation: there is enough stable-build flash for a small minigame or
-first multiplayer slice, but not enough debug-build flash for careless shared
-code. Prefer protocol stubs and one tiny interaction loop first, then optimize.
+The current FX-C build uses an FX-C-only tradeoff to fit: it keeps the custom
+boot animation, but draws the Play background procedurally instead of storing
+the full bitmap. Avoid adding large new bitmaps to FX-C without a matching
+optimization.
 
 ## Classic Arduboy upload
 

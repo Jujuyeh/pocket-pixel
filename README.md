@@ -138,6 +138,9 @@ Prepare the matching Arduboy FX-C catalog entry:
 make fx-entry-fxc
 ```
 
+The FX-C build includes the first USB-C link-cable minigame, Air Hockey. See
+`docs/fxc-air-hockey.md` for setup, controls, and current limitations.
+
 Build a distributable `.arduboy` package:
 
 ```sh
@@ -227,6 +230,7 @@ pocket-pixel/
 |       `-- arduboy-clean.cfg     Clean 1-bit libretro display profile
 |-- docs/
 |   |-- codebase.md               Code and tooling architecture guide
+|   |-- fxc-air-hockey.md         FX-C link-cable minigame notes
 |   |-- fx-workflow.md            Arduboy FX packaging safety workflow
 |   |-- gameplay-audit.md         Current behavior and save format notes
 |   |-- minigames.md              Minigame design and validation notes
