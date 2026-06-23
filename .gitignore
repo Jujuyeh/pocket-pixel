@@ -4,6 +4,7 @@
 /backups/
 /build/
 /dist/
+flashcart-backup-image-*.bin
 /site/build/
 /site/vendor/ardens/ArdensPlayer.js
 /site/vendor/ardens/ArdensPlayer.wasm
