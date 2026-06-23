@@ -252,6 +252,12 @@ been received. The menu currently shows `BALL`, `WATER`, and `FOOD`; up/down
 wrap around the list, and all three entries launch Ball Hunt until Water Battle
 and Food Rush are implemented.
 
+When both pets are together on the inviting console, a lightweight conversation
+cycle runs every 5 seconds. Each cycle has a 25% chance to show no topic. The
+remaining outcomes are evenly split between a heart, chicken, fish, spiral,
+cross, or a `MEOW` without a topic. The heart, chicken, and fish reuse existing
+game sprites; the spiral and cross are drawn procedurally.
+
 Controls:
 
 - Left/right moves the pet horizontally.

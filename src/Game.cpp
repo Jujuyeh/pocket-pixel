@@ -171,6 +171,7 @@ constexpr uint8_t VISIT_IDLE_SPRITE_SIZE = 2 + PET_IDLE_WIDTH * 3;
 constexpr uint8_t VISIT_LEAVE_FRAMES = framesAtGameFps(10);
 constexpr uint8_t VISIT_PAUSE_FRAMES = framesAtGameFps(6);
 constexpr uint8_t VISIT_SHUTTER_FRAMES = framesAtGameFps(14);
+constexpr uint8_t VISIT_TOPIC_FRAMES = framesAtGameFps(50);
 #endif
 constexpr uint8_t MEOW_FRAMES = framesAtGameFps(8);
 constexpr uint8_t MEOW_REPEAT_CHANCE = 14;
@@ -230,6 +231,18 @@ enum WalkObstacleType : uint8_t {
     WALK_OBSTACLE_PUDDLE,
     WALK_OBSTACLE_ROCK,
 };
+
+#ifdef POCKET_PIXEL_FXC_LINK
+enum VisitTopic : uint8_t {
+    VISIT_TOPIC_NONE,
+    VISIT_TOPIC_HEART,
+    VISIT_TOPIC_CHICKEN,
+    VISIT_TOPIC_FISH,
+    VISIT_TOPIC_SPIRAL,
+    VISIT_TOPIC_CROSS,
+    VISIT_TOPIC_MEOW,
+};
+#endif
 
 struct FeedItem {
     bool active = false;
@@ -335,6 +348,8 @@ struct VisitMenuState {
 struct VisitHostState {
     bool active = false;
     uint8_t frame = 0;
+    uint8_t topic = VISIT_TOPIC_NONE;
+    uint8_t topicFrames = 0;
 };
 #endif
 
@@ -2623,6 +2638,80 @@ void drawRamSpriteMirrored(int16_t x, int16_t y, const uint8_t *sprite) {
     }
 }
 
+void chooseVisitTopic() {
+    uint8_t roll = random(0, 8);
+    if (roll < 2) {
+        visitHostState.topic = VISIT_TOPIC_NONE;
+    } else {
+        visitHostState.topic = roll - 1;
+        if (visitHostState.topic == VISIT_TOPIC_MEOW) {
+            sound.tones(ActivePersonality.meowTone);
+        }
+    }
+    visitHostState.topicFrames = VISIT_TOPIC_FRAMES;
+}
+
+void updateVisitConversation() {
+    if (visitHostState.frame < VISIT_LEAVE_FRAMES
+        || !remoteVisit.spriteReady[0]
+        || !remoteVisit.spriteReady[1]) {
+        return;
+    }
+
+    if (visitHostState.topicFrames > 0) {
+        visitHostState.topicFrames--;
+        return;
+    }
+    chooseVisitTopic();
+}
+
+void drawVisitSpiral(uint8_t x, uint8_t y) {
+    arduboy.drawFastHLine(x + 1, y, 5, BLACK);
+    arduboy.drawFastVLine(x + 6, y, 5, BLACK);
+    arduboy.drawFastHLine(x + 2, y + 5, 5, BLACK);
+    arduboy.drawFastVLine(x + 2, y + 2, 4, BLACK);
+    arduboy.drawFastHLine(x + 2, y + 2, 3, BLACK);
+    arduboy.drawPixel(x + 4, y + 3, BLACK);
+}
+
+void drawVisitCross(uint8_t x, uint8_t y) {
+    arduboy.drawFastHLine(x, y + 3, 9, BLACK);
+    arduboy.drawFastHLine(x, y + 4, 9, BLACK);
+    arduboy.drawFastVLine(x + 4, y, 9, BLACK);
+    arduboy.drawFastVLine(x + 5, y, 9, BLACK);
+}
+
+void drawVisitTopic() {
+    if (visitHostState.topicFrames == 0 || visitHostState.topic == VISIT_TOPIC_NONE) {
+        return;
+    }
+
+    switch (visitHostState.topic)
+    {
+    case VISIT_TOPIC_HEART:
+        drawSpritePixels(heartFull, 0, 60, 11, BLACK);
+        break;
+    case VISIT_TOPIC_CHICKEN:
+        drawSpritePixels(feedChicken, 0, 58, 8, BLACK);
+        break;
+    case VISIT_TOPIC_FISH:
+        drawSpritePixels(feedFish, 0, 58, 8, BLACK);
+        break;
+    case VISIT_TOPIC_SPIRAL:
+        drawVisitSpiral(60, 11);
+        break;
+    case VISIT_TOPIC_CROSS:
+        drawVisitCross(60, 10);
+        break;
+    case VISIT_TOPIC_MEOW:
+        tinyfont.setCursor(55, 12);
+        tinyfont.print("MEOW");
+        break;
+    default:
+        break;
+    }
+}
+
 void drawVisitHostScene() {
     int16_t hostX = 14;
     int16_t guestX = 82;
@@ -2639,6 +2728,8 @@ void drawVisitHostScene() {
         }
         drawRamSpriteMirrored(guestX, guestY, remoteVisit.idleSprites[remoteFrame]);
     }
+    updateVisitConversation();
+    drawVisitTopic();
 }
 
 void drawVisitMenu() {

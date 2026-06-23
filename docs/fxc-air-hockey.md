@@ -20,12 +20,17 @@ up and stay in a surprised linked-idle state. The normal care menu is blocked,
 the pet shows a blinking `!`, and the idle screen shows:
 
 ```text
-A LINK
+INVITE?
 ```
 
-Press `A` on either unit to invite the other pet to play. Both units enter the
-air hockey scene. Hold `A` for 3 seconds during the match to leave early, or
-disconnect the link cable.
+Press `A` on either unit to open the invite confirmation prompt. Left/right
+choose `YES` or `NO`, `B` confirms, and `A` cancels.
+
+After an invite, the invited pet leaves its own console, the guest console drops
+a shutter menu, and the host console keeps both pets together. While both pets
+are on the host screen, a 5-second conversation cycle runs between them: 25% of
+cycles stay silent, and the rest are evenly split between heart, chicken, fish,
+spiral, cross, or a plain `MEOW` without a topic.
 
 ## Controls
 
