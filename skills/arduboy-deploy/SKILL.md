@@ -101,7 +101,7 @@ skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-decompile \
   --image backups/fxc/pocket-pixel-unit-a.bin
 skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-build-image \
   --backup-decompiled backups/fxc/pocket-pixel-unit-a \
-  --category 11
+  --category 3
 skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-write-image \
   --port /dev/ttyACM0 \
   --image build/fxc-work/flashcart-fxc/flashcart-image.bin \
@@ -109,7 +109,8 @@ skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-write-image \
 ```
 
 Use `fxc-build-image` for first-time installation: it appends a new `Pocket
-Pixel` entry to an existing category instead of replacing a numeric slot.
+Pixel` entry to an existing category instead of replacing a numeric slot. Pocket
+Pixel belongs at the end of the FX-C stock `ARCADE` category, category `3`.
 
 Decompile a backup image:
 

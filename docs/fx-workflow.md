@@ -101,13 +101,12 @@ replacing an unknown slot:
 ```sh
 skills/arduboy-deploy/scripts/arduboy-deploy.sh fxc-build-image \
   --backup-decompiled backups/fxc/pocket-pixel-unit-a \
-  --category 11
+  --category 3
 ```
 
-The default `--category 11` is a conservative development slot based on the
-current FX-C catalog structure observed during All Men's Morris and Pocket Pixel
-testing. On the first two Pocket Pixel FX-C backups this inserted the game as
-`11/12/12`, after verifying that no `Pocket Pixel` entry already existed.
+The default `--category 3` matches the stock FX-C `ARCADE` category observed
+during Pocket Pixel testing. On the first Arcade install this inserted the game
+as `3/25/25`, after verifying that no `Pocket Pixel` entry already existed.
 Inspect the decompiled title screens before changing this for a different
 catalog.
 

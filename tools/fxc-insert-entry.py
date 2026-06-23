@@ -17,6 +17,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--flashcart-dir", required=True, type=Path)
     parser.add_argument("--category", required=True, type=int)
     parser.add_argument("--title", default="Pocket Pixel")
+    parser.add_argument("--replace-title")
     parser.add_argument("--hex", required=True, type=Path)
     parser.add_argument("--banner", required=True, type=Path)
     return parser.parse_args()
@@ -46,6 +47,10 @@ def next_slot(rows: list[list[str]], category: int) -> int:
     return max(slots) + 1
 
 
+def remove_existing_title(rows: list[list[str]], title: str) -> list[list[str]]:
+    return [rows[0]] + [row for row in rows[1:] if len(row) < 2 or row[1] != title]
+
+
 def main() -> None:
     args = parse_args()
     index = args.flashcart_dir / "flashcart-index.csv"
@@ -57,6 +62,8 @@ def main() -> None:
         raise SystemExit(f"Missing banner: {args.banner}")
 
     rows = read_rows(index)
+    replace_title = args.replace_title or args.title
+    rows = remove_existing_title(rows, replace_title)
     category = str(args.category)
     slot = next_slot(rows, args.category)
     target_dir = args.flashcart_dir / category / str(slot)

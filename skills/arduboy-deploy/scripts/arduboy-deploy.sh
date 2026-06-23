@@ -410,7 +410,7 @@ command_fxc_decompile() {
 
 command_fxc_build_image() {
   local project_root="$PWD" loader_dir="$DEFAULT_LOADER_DIR" build="fxc"
-  local backup_decompiled="" category="11" title="Pocket Pixel" banner="" output_dir="" hex="" profile="profiles/pixel.json" use_nix=1
+  local backup_decompiled="" category="3" title="Pocket Pixel" banner="" output_dir="" hex="" profile="profiles/pixel.json" use_nix=1
   while [ "$#" -gt 0 ]; do
     case "$1" in
       --project-root) need_value "$@"; project_root="$2"; shift 2 ;;
@@ -424,7 +424,7 @@ command_fxc_build_image() {
       --output-dir) need_value "$@"; output_dir="$2"; shift 2 ;;
       --hex) need_value "$@"; hex="$2"; shift 2 ;;
       --no-nix) use_nix=0; shift ;;
-      --help) printf 'Example: %s fxc-build-image --backup-decompiled backups/fxc/unit-a --category 11\n' "$SCRIPT_NAME"; return ;;
+      --help) printf 'Example: %s fxc-build-image --backup-decompiled backups/fxc/unit-a --category 3\n' "$SCRIPT_NAME"; return ;;
       *) die "unknown option for fxc-build-image: $1" ;;
     esac
   done
