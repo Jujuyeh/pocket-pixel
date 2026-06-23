@@ -46,7 +46,7 @@ Global variables use 1598 bytes (62%) of dynamic memory.
 Last measured FX-C build:
 
 ```text
-Sketch uses 28458 bytes (99%) of program storage space.
+Sketch uses 28474 bytes (99%) of program storage space.
 Global variables use 1760 bytes (68%) of dynamic memory.
 ```
 
@@ -195,7 +195,7 @@ Space expectation after measurement:
 - Stable currently leaves 4,404 bytes of flash and 1,004 bytes of RAM.
 - Debug leaves 3,268 bytes of flash and 962 bytes of RAM.
 - FX-C with Ball Hunt, invite confirmation, visit-data exchange, host-side
-  remote pet drawing, and the visit menu leaves 214 bytes of flash and 800
+  remote pet drawing, and the visit menu leaves 198 bytes of flash and 800
   bytes of RAM.
 - More FX-C gameplay now requires optimization first; avoid large bitmaps and
   broad abstractions.

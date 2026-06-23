@@ -2590,7 +2590,7 @@ void drawVisitMenuOption(uint8_t index, const char *label) {
     tinyfont.print(label);
 }
 
-void drawRamSpriteOverwrite(int16_t x, int16_t y, const uint8_t *sprite) {
+void drawRamSpriteMirrored(int16_t x, int16_t y, const uint8_t *sprite) {
     uint8_t w = sprite[0];
     uint8_t h = sprite[1];
     uint8_t pages = (h + 7) / 8;
@@ -2602,7 +2602,9 @@ void drawRamSpriteOverwrite(int16_t x, int16_t y, const uint8_t *sprite) {
                 if (sy >= h) {
                     continue;
                 }
-                arduboy.drawPixel(x + sx, y + sy, (bits & (1 << bit)) ? BLACK : WHITE);
+                if ((bits & (1 << bit)) != 0) {
+                    arduboy.drawPixel(x + w - 1 - sx, y + sy, BLACK);
+                }
             }
         }
     }
@@ -2622,7 +2624,7 @@ void drawVisitHostScene() {
             guestY = 64 - ((64 - PET_IDLE_DRAW_Y) * visitHostState.frame) / VISIT_LEAVE_FRAMES;
             visitHostState.frame++;
         }
-        drawRamSpriteOverwrite(guestX, guestY, remoteVisit.idleSprites[remoteFrame]);
+        drawRamSpriteMirrored(guestX, guestY, remoteVisit.idleSprites[remoteFrame]);
     } else {
         tinyfont.setCursor(72, 30);
         tinyfont.print("...");
@@ -2659,6 +2661,7 @@ void drawVisitMenu() {
     }
 
     arduboy.fillRect(38, 14, 52, 40, WHITE);
+    arduboy.drawRect(38, 14, 52, 40, BLACK);
     tinyfont.setCursor(54, 19);
     tinyfont.print("MENU");
     drawVisitMenuOption(0, "BALL");
@@ -3223,7 +3226,7 @@ void idle() {
         if (handleLinkInviteConfirm() && state != IDLE) {
             return;
         }
-    } else if (arduboy.justPressed(A_BUTTON)) {
+    } else if (!visitHostState.active && arduboy.justPressed(A_BUTTON)) {
         linkInviteConfirmOpen = true;
     }
 #endif
