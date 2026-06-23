@@ -239,12 +239,12 @@ open a small confirmation prompt, left/right choose `YES` or `NO`, `B` confirms,
 and `A` cancels.
 
 Invites now start a compact visit-data exchange. Each console sends a small
-personality packet plus the two 26x24 idle frames in 5-byte sprite chunks. This
-protocol is the foundation for the upcoming two-pet visit scene. After accepting
-an invite, the local pet walks down offscreen, a shutter closes, and a small
-`MENU` panel appears. The menu currently shows `BALL`, `WATER`, and `FOOD`;
-all three entries launch Ball Hunt until Water Battle and Food Rush are
-implemented.
+personality packet plus the two 26x24 idle frames in 5-byte sprite chunks. The
+invited pet walks down offscreen, waits briefly, then a shop-style shutter drops
+before a small `MENU` panel appears. The inviting console keeps its pet onscreen
+and draws the invited pet arriving from the bottom once both idle frames have
+been received. The menu currently shows `BALL`, `WATER`, and `FOOD`; all three
+entries launch Ball Hunt until Water Battle and Food Rush are implemented.
 
 Controls:
 

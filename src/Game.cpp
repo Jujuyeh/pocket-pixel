@@ -169,6 +169,8 @@ constexpr uint8_t HOCKEY_PADDLE_Y_HOST = 114;
 constexpr uint8_t HOCKEY_PADDLE_Y_CLIENT = 13;
 constexpr uint8_t VISIT_IDLE_SPRITE_SIZE = 2 + PET_IDLE_WIDTH * 3;
 constexpr uint8_t VISIT_LEAVE_FRAMES = framesAtGameFps(10);
+constexpr uint8_t VISIT_PAUSE_FRAMES = framesAtGameFps(6);
+constexpr uint8_t VISIT_SHUTTER_FRAMES = framesAtGameFps(14);
 #endif
 constexpr uint8_t BOOT_LOGO_X = 52;
 constexpr uint8_t BOOT_LOGO_Y = 26;
@@ -318,11 +320,17 @@ struct VisitTransfer {
 struct RemoteVisitData {
     LinkVisitProfile profile = {};
     uint8_t idleSprites[2][VISIT_IDLE_SPRITE_SIZE] = {};
+    bool spriteReady[2] = {};
 };
 
 struct VisitMenuState {
     uint8_t frame = 0;
     uint8_t selected = 0;
+};
+
+struct VisitHostState {
+    bool active = false;
+    uint8_t frame = 0;
 };
 #endif
 
@@ -370,6 +378,7 @@ AirHockeyMinigame hockeyGame;
 VisitTransfer visitTransfer;
 RemoteVisitData remoteVisit;
 VisitMenuState visitMenuState;
+VisitHostState visitHostState;
 #endif
 
 struct ToolOverlay {
@@ -900,6 +909,20 @@ void startVisitTransfer() {
     visitTransfer.active = true;
 }
 
+void clearRemoteVisit() {
+    remoteVisit = RemoteVisitData();
+}
+
+void startVisitHost() {
+    clearRemoteVisit();
+    visitHostState = VisitHostState();
+    visitHostState.active = true;
+}
+
+void stopVisitHost() {
+    visitHostState = VisitHostState();
+}
+
 void startVisitMenu() {
     visitMenuState = VisitMenuState();
     setState(VISIT_MENU);
@@ -917,6 +940,9 @@ void updateVisitTransfer() {
         && receivedChunk.chunk <= VISIT_IDLE_SPRITE_SIZE - LINK_SPRITE_CHUNK_BYTES) {
         for (uint8_t i = 0; i < LINK_SPRITE_CHUNK_BYTES; i++) {
             remoteVisit.idleSprites[receivedChunk.sprite][receivedChunk.chunk + i] = receivedChunk.data[i];
+        }
+        if (receivedChunk.chunk + LINK_SPRITE_CHUNK_BYTES >= VISIT_IDLE_SPRITE_SIZE) {
+            remoteVisit.spriteReady[receivedChunk.sprite] = true;
         }
     }
 
@@ -2410,6 +2436,7 @@ void setState(GAME_STATE status) {
 #ifdef POCKET_PIXEL_FXC_LINK
     if (status == AIR_HOCKEY) {
         resetAirHockeyMinigame();
+        stopVisitHost();
     }
 #endif
     if (state == FEED && status != FEED) {
@@ -2563,6 +2590,45 @@ void drawVisitMenuOption(uint8_t index, const char *label) {
     tinyfont.print(label);
 }
 
+void drawRamSpriteOverwrite(int16_t x, int16_t y, const uint8_t *sprite) {
+    uint8_t w = sprite[0];
+    uint8_t h = sprite[1];
+    uint8_t pages = (h + 7) / 8;
+    for (uint8_t sx = 0; sx < w; sx++) {
+        for (uint8_t page = 0; page < pages; page++) {
+            uint8_t bits = sprite[2 + sx + page * w];
+            for (uint8_t bit = 0; bit < 8; bit++) {
+                uint8_t sy = page * 8 + bit;
+                if (sy >= h) {
+                    continue;
+                }
+                arduboy.drawPixel(x + sx, y + sy, (bits & (1 << bit)) ? BLACK : WHITE);
+            }
+        }
+    }
+}
+
+void drawVisitHostScene() {
+    int16_t hostX = 14;
+    int16_t guestX = 82;
+    uint8_t localFrame = (frameCounter / idleBreathFrames()) & 1;
+    Sprites::drawOverwrite(hostX, PET_IDLE_DRAW_Y, localFrame ? PET_IDLE1 : PET_IDLE2, 0);
+
+    if (remoteVisit.spriteReady[0] && remoteVisit.spriteReady[1]) {
+        uint8_t remoteBreath = remoteVisit.profile.breathFrames == 0 ? idleBreathFrames() : remoteVisit.profile.breathFrames;
+        uint8_t remoteFrame = (frameCounter / remoteBreath) & 1;
+        int16_t guestY = PET_IDLE_DRAW_Y;
+        if (visitHostState.frame < VISIT_LEAVE_FRAMES) {
+            guestY = 64 - ((64 - PET_IDLE_DRAW_Y) * visitHostState.frame) / VISIT_LEAVE_FRAMES;
+            visitHostState.frame++;
+        }
+        drawRamSpriteOverwrite(guestX, guestY, remoteVisit.idleSprites[remoteFrame]);
+    } else {
+        tinyfont.setCursor(72, 30);
+        tinyfont.print("...");
+    }
+}
+
 void drawVisitMenu() {
     if (visitMenuState.frame < VISIT_LEAVE_FRAMES) {
         uint8_t y = PET_IDLE_DRAW_Y + visitMenuState.frame * 2;
@@ -2571,14 +2637,26 @@ void drawVisitMenu() {
         return;
     }
 
-    uint8_t h = (visitMenuState.frame - VISIT_LEAVE_FRAMES) * 2;
-    if (h > 32) {
-        h = 32;
-    } else {
+    if (visitMenuState.frame < VISIT_LEAVE_FRAMES + VISIT_PAUSE_FRAMES) {
         visitMenuState.frame++;
+        return;
+    }
+
+    uint8_t shutterFrame = visitMenuState.frame - VISIT_LEAVE_FRAMES - VISIT_PAUSE_FRAMES;
+    uint8_t h = (uint16_t)64 * shutterFrame / VISIT_SHUTTER_FRAMES;
+    if (h < 64) {
+        visitMenuState.frame++;
+    } else {
+        h = 64;
     }
     arduboy.fillRect(0, 0, 128, h, BLACK);
-    arduboy.fillRect(0, 64 - h, 128, h, BLACK);
+    for (uint8_t y = 3; y < h; y += 6) {
+        arduboy.drawFastHLine(0, y, 128, WHITE);
+    }
+
+    if (h < 64) {
+        return;
+    }
 
     arduboy.fillRect(38, 14, 52, 40, WHITE);
     tinyfont.setCursor(54, 19);
@@ -2597,7 +2675,7 @@ void visitMenu() {
         setState(AIR_HOCKEY);
         return;
     }
-    if (visitMenuState.frame >= VISIT_LEAVE_FRAMES + 16) {
+    if (visitMenuState.frame >= VISIT_LEAVE_FRAMES + VISIT_PAUSE_FRAMES + VISIT_SHUTTER_FRAMES) {
         if (arduboy.justPressed(UP_BUTTON) && visitMenuState.selected > 0) {
             visitMenuState.selected--;
             playMenuMoveTone();
@@ -2784,6 +2862,7 @@ bool handleLinkInviteConfirm() {
         bool accepted = linkInviteConfirmYes;
         closeLinkInviteConfirm();
         if (accepted) {
+            startVisitHost();
             startVisitTransfer();
             linkSendInvite();
         }
@@ -3139,6 +3218,7 @@ void idle() {
     bool linkedIdle = linkIdleActive();
     if (!linkedIdle) {
         closeLinkInviteConfirm();
+        stopVisitHost();
     } else if (linkInviteConfirmOpen) {
         if (handleLinkInviteConfirm() && state != IDLE) {
             return;
@@ -3164,21 +3244,33 @@ void idle() {
     int16_t petX = idlePetDrawX();
     int16_t petDx = petX - PET_IDLE_DRAW_X;
 
+    bool skipIdlePetDraw = false;
+#ifdef POCKET_PIXEL_FXC_LINK
+    skipIdlePetDraw = linkedIdle && visitHostState.active;
+#endif
     // Idle overlays are offset by petDx so menu animation does not desync them.
-    if ((frameCounter / idleBreathFrames()) % 2 == 0 || petHas(ANXIOUS) || petHas(BORED)) {
-        Sprites::drawOverwrite(petX, PET_IDLE_DRAW_Y, PET_IDLE2, 0);
-    } else {
-        Sprites::drawOverwrite(petX, PET_IDLE_DRAW_Y, PET_IDLE1, 0);
+    if (!skipIdlePetDraw) {
+        if ((frameCounter / idleBreathFrames()) % 2 == 0 || petHas(ANXIOUS) || petHas(BORED)) {
+            Sprites::drawOverwrite(petX, PET_IDLE_DRAW_Y, PET_IDLE2, 0);
+        } else {
+            Sprites::drawOverwrite(petX, PET_IDLE_DRAW_Y, PET_IDLE1, 0);
+        }
     }
 
 #ifdef POCKET_PIXEL_FXC_LINK
     if (linkedIdle) {
-        menu();
-        drawLifeBar(arduboy);
-        drawXpBar(arduboy, tinyfont, 2, idleXpWidth());
-        tinyfont.setCursor(45, 4);
-        tinyfont.print("INVITE?");
-        drawLinkSurpriseMark(petX);
+        if (visitHostState.active) {
+            drawVisitHostScene();
+            drawLifeBar(arduboy);
+            drawXpBar(arduboy, tinyfont, 2, idleXpWidth());
+        } else {
+            menu();
+            drawLifeBar(arduboy);
+            drawXpBar(arduboy, tinyfont, 2, idleXpWidth());
+            tinyfont.setCursor(45, 4);
+            tinyfont.print("INVITE?");
+            drawLinkSurpriseMark(petX);
+        }
         if (linkInviteConfirmOpen) {
             drawLinkInviteConfirm();
         }

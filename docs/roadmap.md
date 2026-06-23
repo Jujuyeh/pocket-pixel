@@ -46,8 +46,8 @@ Global variables use 1598 bytes (62%) of dynamic memory.
 Last measured FX-C build:
 
 ```text
-Sketch uses 27664 bytes (96%) of program storage space.
-Global variables use 1586 bytes (61%) of dynamic memory.
+Sketch uses 28458 bytes (99%) of program storage space.
+Global variables use 1760 bytes (68%) of dynamic memory.
 ```
 
 Size tooling:
@@ -177,6 +177,8 @@ release artifacts before implementing any link-cable gameplay.
    Hockey.
 8. [ ] Hardware-test Air Hockey on two FX-C units: linked idle wake, invite flow,
    host/client orientation, puck crossing, score sync, and disconnect behavior.
+9. [ ] Add graceful link-loss recovery during an active linked session: fade to
+   white and restart the game state without replaying the boot sequence.
 
 Nix follow-up notes:
 
@@ -192,8 +194,9 @@ Space expectation after measurement:
 
 - Stable currently leaves 4,404 bytes of flash and 1,004 bytes of RAM.
 - Debug leaves 3,268 bytes of flash and 962 bytes of RAM.
-- FX-C with Ball Hunt, invite confirmation, visit-data exchange, and the visit
-  menu leaves 1,008 bytes of flash and 974 bytes of RAM.
+- FX-C with Ball Hunt, invite confirmation, visit-data exchange, host-side
+  remote pet drawing, and the visit menu leaves 214 bytes of flash and 800
+  bytes of RAM.
 - More FX-C gameplay now requires optimization first; avoid large bitmaps and
   broad abstractions.
 - The FX-C build keeps the custom boot animation, but uses a procedural Play
