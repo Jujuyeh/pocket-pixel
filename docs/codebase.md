@@ -19,6 +19,11 @@ The game runs through Arduboy2 at `GAME_FPS = 30`. Most legacy timing values
 were originally tuned around 10 FPS, so helpers such as `framesAtGameFps()`
 scale old frame counts to the current framerate.
 
+Release, debug, and FX-C builds are compiled with AVR size-oriented flags:
+`-mcall-prologues`, `-fno-inline-small-functions`, and linker `--relax`. These
+trade a small amount of call overhead for enough flash headroom to keep the FX-C
+link build viable.
+
 Startup uses `arduboy.beginDoFirst()` and `arduboy.waitNoButtons()` instead of
 `arduboy.begin()`. This preserves hardware, flashlight, system-button, and audio
 initialization while skipping the default scrolling Arduboy boot logo. A custom

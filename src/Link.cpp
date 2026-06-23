@@ -3,6 +3,7 @@
 #ifdef POCKET_PIXEL_FXC_LINK
 #define I2C_IMPLEMENTATION
 #define I2C_BUFFER_SIZE 12
+#define I2C_CHECK_BUS_BUSY_CHECKS 255
 #include <ArduboyI2C.h>
 
 namespace {
@@ -17,6 +18,7 @@ constexpr uint8_t LINK_SEND_ADDRESS = 0x00;
 constexpr uint8_t LINK_PEER_TIMEOUT_FRAMES = 45;
 constexpr uint8_t LINK_SEND_INTERVAL_FRAMES = 8;
 constexpr uint8_t LINK_TX_STUCK_FRAMES = 3;
+constexpr uint8_t LINK_IDLE_LINE_CHECKS = 8;
 
 struct LinkPacket {
     uint8_t magic;
@@ -80,6 +82,16 @@ void linkWritePacket(const LinkPacket &packet) {
 #endif
 }
 
+bool linkLinesIdle() {
+    for (uint8_t i = 0; i < LINK_IDLE_LINE_CHECKS; i++) {
+        if (!(I2C_PIN & _BV(I2C_SDA_BIT)) || !(I2C_PIN & _BV(I2C_SCL_BIT))) {
+            return false;
+        }
+        _delay_us(1000000.0 / I2C_FREQUENCY / 2.0);
+    }
+    return true;
+}
+
 void linkSetReceiveCallback() {
     I2C::onReceive(onReceive);
 }
@@ -130,6 +142,9 @@ void onReceive() {
 
 void sendPacket(LinkPacket packet) {
     if (!linkBusReady()) {
+        return;
+    }
+    if (!linkLinesIdle()) {
         return;
     }
     packet.magic = LINK_MAGIC;

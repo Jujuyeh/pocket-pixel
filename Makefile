@@ -27,6 +27,7 @@ FXC_HEX := $(SKETCH_DIR)/build/fxc/pocket-pixel.ino.hex
 ARDUBOY_PACKAGE := $(DIST_DIR)/release/pocket-pixel-$(ARDUBOY_VERSION).arduboy
 AVR_SIZE ?= avr-size
 AVR_NM ?= avr-nm
+ARDUINO_SIZE_FLAGS := --build-property compiler.c.extra_flags="-mcall-prologues -fno-inline-small-functions" --build-property compiler.cpp.extra_flags="-mcall-prologues -fno-inline-small-functions" --build-property compiler.c.elf.extra_flags="-Wl,--relax"
 PET_STUDIO ?= $(SKETCH_DIR)/tools/pet-studio/index.html
 PET_STUDIO_PORT ?= 8123
 PET_STUDIO_SERVER ?= $(SKETCH_DIR)/tools/pet-studio/server.py
@@ -37,11 +38,11 @@ AUDIO_JSON ?= $(SKETCH_DIR)/build/pet-studio/audio.json
 WEB_SITE_SCRIPT ?= $(SKETCH_DIR)/tools/prepare-web-site.sh
 
 ifeq ($(BUILD),debug)
-ARDUINO_BUILD_FLAGS := --build-property compiler.cpp.extra_flags="-DPOCKET_PIXEL_DEBUG=1"
+ARDUINO_BUILD_FLAGS := --build-property compiler.cpp.extra_flags="-DPOCKET_PIXEL_DEBUG=1 -mcall-prologues -fno-inline-small-functions" --build-property compiler.c.extra_flags="-mcall-prologues -fno-inline-small-functions" --build-property compiler.c.elf.extra_flags="-Wl,--relax"
 else ifeq ($(BUILD),fxc)
-ARDUINO_BUILD_FLAGS := --build-property compiler.cpp.extra_flags="-DPOCKET_PIXEL_FXC_LINK=1"
+ARDUINO_BUILD_FLAGS := --build-property compiler.cpp.extra_flags="-DPOCKET_PIXEL_FXC_LINK=1 -mcall-prologues -fno-inline-small-functions" --build-property compiler.c.extra_flags="-mcall-prologues -fno-inline-small-functions" --build-property compiler.c.elf.extra_flags="-Wl,--relax"
 else ifeq ($(BUILD),stable)
-ARDUINO_BUILD_FLAGS :=
+ARDUINO_BUILD_FLAGS := $(ARDUINO_SIZE_FLAGS)
 else
 $(error BUILD must be stable, debug, or fxc)
 endif

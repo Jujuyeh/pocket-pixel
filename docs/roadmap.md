@@ -32,22 +32,22 @@ cycle changes code, tooling, gameplay, save data, or Arduboy FX packaging.
 Last measured stable build:
 
 ```text
-Sketch uses 24770 bytes (86%) of program storage space.
+Sketch uses 24268 bytes (84%) of program storage space.
 Global variables use 1556 bytes (60%) of dynamic memory.
 ```
 
 Last measured debug build:
 
 ```text
-Sketch uses 25940 bytes (90%) of program storage space.
+Sketch uses 25404 bytes (88%) of program storage space.
 Global variables use 1598 bytes (62%) of dynamic memory.
 ```
 
 Last measured FX-C build:
 
 ```text
-Sketch uses 28644 bytes (99%) of program storage space.
-Global variables use 1647 bytes (64%) of dynamic memory.
+Sketch uses 27472 bytes (95%) of program storage space.
+Global variables use 1641 bytes (64%) of dynamic memory.
 ```
 
 Size tooling:
@@ -58,6 +58,11 @@ nix develop -c make size-debug
 nix develop -c make size-fxc
 nix develop -c make symbols
 ```
+
+All builds use AVR size-oriented compiler/linker flags shared with
+All Men's Morris: `-mcall-prologues`, `-fno-inline-small-functions`, and
+`-Wl,--relax`. On the FX-C build these recover roughly 1.2 KB of flash compared
+with the same source compiled without them.
 
 ## Documentation Cycle
 
@@ -185,9 +190,9 @@ Nix follow-up notes:
 
 Space expectation after measurement:
 
-- Stable currently leaves 3,902 bytes of flash and 1,004 bytes of RAM.
-- Debug leaves 2,732 bytes of flash and 962 bytes of RAM.
-- FX-C with Air Hockey leaves 28 bytes of flash and 913 bytes of RAM.
+- Stable currently leaves 4,404 bytes of flash and 1,004 bytes of RAM.
+- Debug leaves 3,268 bytes of flash and 962 bytes of RAM.
+- FX-C with Air Hockey leaves 1,200 bytes of flash and 919 bytes of RAM.
 - More FX-C gameplay now requires optimization first; avoid large bitmaps and
   broad abstractions.
 - The FX-C build keeps the custom boot animation, but uses a procedural Play

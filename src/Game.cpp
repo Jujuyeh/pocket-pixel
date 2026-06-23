@@ -1082,6 +1082,11 @@ bool hockeyPuckHitsPaddle(uint8_t paddleX, bool striking, bool hostSide) {
         && abs(puckY - paddleY) <= 4 + hockeyReachBonus();
 }
 
+uint8_t hockeyRemoteGlobalX(const LinkInput &remoteInput) {
+    uint8_t width = hockeyCatWidth(remoteInput.strike, HOCKEY_CAT_STRIKE_FRAMES);
+    return 127 - constrain(static_cast<int16_t>(remoteInput.x) + width, 0, 127);
+}
+
 void hockeyBounceFromPaddle(uint8_t paddleX, bool hostSide) {
     uint8_t width = hockeyCatWidth(true, HOCKEY_CAT_STRIKE_FRAMES);
     int16_t puckX = hockeyGame.puckXSubpx / HOCKEY_UNIT;
@@ -1107,7 +1112,7 @@ void hockeyPoint(bool hostScored) {
 void updateHockeyHostPhysics() {
     LinkInput remoteInput;
     if (linkConsumeInput(remoteInput)) {
-        hockeyGame.remoteX = remoteInput.x;
+        hockeyGame.remoteX = hockeyRemoteGlobalX(remoteInput);
         hockeyGame.remoteStrike = remoteInput.strike;
     }
 
@@ -1946,6 +1951,11 @@ int16_t hockeyScreenPuckY() {
     return hockeyGame.host ? globalY - 64 : 63 - globalY;
 }
 
+int16_t hockeyScreenPuckX() {
+    int16_t globalX = hockeyGame.puckXSubpx / HOCKEY_UNIT;
+    return hockeyGame.host ? globalX : 127 - globalX;
+}
+
 uint8_t hockeyLocalScore() {
     return hockeyGame.host ? hockeyGame.hostScore : hockeyGame.clientScore;
 }
@@ -1956,7 +1966,6 @@ uint8_t hockeyRemoteScore() {
 
 void drawHockeyRink() {
     arduboy.drawRect(0, 0, 128, 64, BLACK);
-    arduboy.drawFastHLine(0, 31, 128, BLACK);
 }
 
 void drawHockeyCat(uint8_t x, uint8_t bottomY, bool strike, uint8_t strikeFrames) {
@@ -1968,7 +1977,7 @@ void drawHockeyCat(uint8_t x, uint8_t bottomY, bool strike, uint8_t strikeFrames
 }
 
 void drawHockeyPuck() {
-    int16_t puckX = hockeyGame.puckXSubpx / HOCKEY_UNIT;
+    int16_t puckX = hockeyScreenPuckX();
     int16_t puckY = hockeyScreenPuckY();
     if (puckY < -HOCKEY_PUCK_R || puckY > 63 + HOCKEY_PUCK_R) {
         return;
@@ -2627,8 +2636,8 @@ void drawLinkSurpriseMark(int16_t petX) {
     if (((frameCounter / framesAtGameFps(5)) & 1) != 0) {
         return;
     }
-    uint8_t x = petX + 19;
-    arduboy.drawFastVLine(x, 12, 5, BLACK);
+    uint8_t x = petX + 15;
+    arduboy.drawFastVLine(x, 13, 4, BLACK);
     arduboy.drawPixel(x, 19, BLACK);
 }
 #endif
