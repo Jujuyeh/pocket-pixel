@@ -185,9 +185,16 @@ normal Arduboy/FX builds unchanged.
    host/client orientation, puck crossing, score sync, and disconnect behavior.
 12. [ ] Hardware-test Water Battle on two FX-C units: menu routing, winner sync,
    hold-to-exit, and return-to-visit behavior.
-13. [ ] Implement Food Rush once there is enough flash budget for the dropper
+13. [ ] Polish linked pet conversations after the lightweight meow validation:
+   move the left pet's `MEOW` text 3 pixels farther right from the pet, keep the
+   guest text similarly separated from the guest pet, choose each displayed
+   `MEOW` position once from the allowed speech window instead of jittering it
+   every frame, restore varied meow phrase patterns such as single meows,
+   paired meows, triplets, and split pairs, and play the full profile meow shape
+   for each spoken meow using the correct local or guest pitch.
+14. [ ] Implement Food Rush once there is enough flash budget for the dropper
    and bowl roles.
-14. [ ] Add graceful link-loss recovery during an active linked session: fade to
+15. [ ] Add graceful link-loss recovery during an active linked session: fade to
    white and restart the game state without replaying the boot sequence.
 
 Nix follow-up notes:

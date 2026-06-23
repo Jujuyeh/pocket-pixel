@@ -278,6 +278,12 @@ alternate short `MEOW` calls using their own profile pitch; the guest pitch is
 sent over the link with the visit profile. The heart, chicken, and fish reuse
 existing game sprites; the spiral and cross are drawn procedurally.
 
+Conversation polish still pending: speech text should be separated a few pixels
+farther from each pet, each `MEOW` should choose one fixed position inside its
+speech window instead of visually jittering, and linked speech should use varied
+profile-pitched meow phrases rather than the current lightweight single-note
+calls.
+
 Controls:
 
 - Left/right moves the pet horizontally.

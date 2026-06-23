@@ -33,6 +33,19 @@ cycles stay silent. The rest choose heart, chicken, fish, spiral, cross, or an
 empty topic; while a topic is active, both pets alternate short meows using
 their own profile pitch.
 
+Next conversation polish:
+
+- Separate the `MEOW` text from the speaking pet by about 3 pixels. For the left
+  pet, move its `MEOW` 3 pixels farther right than the current lightweight
+  placement; keep the guest `MEOW` similarly separated on the side it faces.
+- Pick one random position inside the allowed speech window for each displayed
+  `MEOW`, then keep it fixed for that word. Do not animate or jitter the text
+  after it appears.
+- Reintroduce varied phrase patterns: single meow, paired meows, triplets, and
+  split pairs such as `meow meow-meow`.
+- Each spoken meow should play the actual profile meow contour, not just a
+  single short note. Local and guest pets must use their own profile pitch.
+
 ## Ball Hunt Controls
 
 - Left/right: move the pet horizontally.
