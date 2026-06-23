@@ -160,6 +160,7 @@ struct PersonalityProfile {{
   const uint16_t *menuMelody;
   uint8_t menuMelodyLength;
   uint8_t playfulness;
+  uint8_t anxiety;
   uint8_t chanceSleeping;
   uint8_t chanceHungry;
   uint8_t chanceDirty;
@@ -176,6 +177,7 @@ constexpr PersonalityProfile {sym}Personality = {{
   {sym}MenuMelody,
   {len(menu_melody)},
   {data["traits"]["playfulness"]},
+  {data["traits"]["anxiety"]},
   {behavior["chanceSleeping"]},
   {behavior["chanceHungry"]},
   {behavior["chanceDirty"]},

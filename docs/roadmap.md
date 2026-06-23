@@ -46,8 +46,8 @@ Global variables use 1598 bytes (62%) of dynamic memory.
 Last measured FX-C build:
 
 ```text
-Sketch uses 27472 bytes (95%) of program storage space.
-Global variables use 1641 bytes (64%) of dynamic memory.
+Sketch uses 28404 bytes (99%) of program storage space.
+Global variables use 1848 bytes (72%) of dynamic memory.
 ```
 
 Size tooling:
@@ -192,7 +192,8 @@ Space expectation after measurement:
 
 - Stable currently leaves 4,404 bytes of flash and 1,004 bytes of RAM.
 - Debug leaves 3,268 bytes of flash and 962 bytes of RAM.
-- FX-C with Air Hockey leaves 1,200 bytes of flash and 919 bytes of RAM.
+- FX-C with Air Hockey, invite confirmation, and visit-data exchange leaves
+  268 bytes of flash and 712 bytes of RAM.
 - More FX-C gameplay now requires optimization first; avoid large bitmaps and
   broad abstractions.
 - The FX-C build keeps the custom boot animation, but uses a procedural Play

@@ -216,12 +216,31 @@ Generated fields currently include:
 - Display name.
 - Menu navigation melody.
 - Playfulness.
+- Anxiety, used to derive idle breathing speed.
 - Random status chance thresholds.
 - Feed cost.
 - Fish/chicken preference weights.
 
 Do not edit generated profile headers by hand. Edit JSON profiles, then
 regenerate.
+
+### `Link.h` and `Link.cpp`
+
+FX-C-only link-cable transport, compiled behind `POCKET_PIXEL_FXC_LINK`.
+
+The packet payload is intentionally tiny to fit the ArduboyI2C buffer. Current
+message kinds cover:
+
+- peer beacons,
+- invites,
+- Ball Hunt input,
+- Ball Hunt host state,
+- visit profile data,
+- visit sprite chunks.
+
+Visit sprite transfer uses 5-byte chunks. The current visit payload is the two
+active 26x24 idle frames, transferred in 16 chunks each, plus a compact
+personality packet carrying idle breath timing and food/play preferences.
 
 ## Profiles
 

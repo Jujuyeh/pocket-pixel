@@ -234,8 +234,14 @@ Invalid save data resets to the default recovered state:
 
 `BUILD=fxc` adds a first link-cable Air Hockey minigame between two Arduboy
 FX-C units. When a peer is detected in idle, the pet wakes up, the normal care
-menu is blocked, a blinking `!` appears, and `A LINK` is shown. Press `A` on
-either unit to invite the other pet.
+menu is blocked, a blinking `!` appears, and `INVITE?` is shown. Press `A` to
+open a small confirmation prompt, left/right choose `YES` or `NO`, `B` confirms,
+and `A` cancels.
+
+Invites now start a compact visit-data exchange. Each console sends a small
+personality packet plus the two 26x24 idle frames in 5-byte sprite chunks. This
+protocol is the foundation for the upcoming two-pet visit scene; the current
+playable linked game still enters Ball Hunt/Air Hockey after the invite.
 
 Controls:
 

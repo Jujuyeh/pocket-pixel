@@ -13,6 +13,8 @@ constexpr uint8_t LINK_KIND_BEACON = 1;
 constexpr uint8_t LINK_KIND_INVITE = 2;
 constexpr uint8_t LINK_KIND_INPUT = 3;
 constexpr uint8_t LINK_KIND_STATE = 4;
+constexpr uint8_t LINK_KIND_VISIT_PROFILE = 5;
+constexpr uint8_t LINK_KIND_SPRITE_CHUNK = 6;
 constexpr uint8_t LINK_ADDRESS = 0x08;
 constexpr uint8_t LINK_SEND_ADDRESS = 0x00;
 constexpr uint8_t LINK_PEER_TIMEOUT_FRAMES = 45;
@@ -49,8 +51,12 @@ bool linkStarted = false;
 bool pendingInvite = false;
 bool pendingInput = false;
 bool pendingState = false;
+bool pendingVisitProfile = false;
+bool pendingSpriteChunk = false;
 LinkInput latestInput = {};
 LinkState latestState = {};
+LinkVisitProfile latestVisitProfile = {};
+LinkSpriteChunk latestSpriteChunk = {};
 
 #if I2C_LIB_VER >= 30000
 void onReceive(const uint8_t *buffer, uint8_t size);
@@ -140,12 +146,12 @@ void onReceive() {
 }
 #endif
 
-void sendPacket(LinkPacket packet) {
+bool sendPacket(LinkPacket packet) {
     if (!linkBusReady()) {
-        return;
+        return false;
     }
     if (!linkLinesIdle()) {
-        return;
+        return false;
     }
     packet.magic = LINK_MAGIC;
     packet.version = LINK_VERSION;
@@ -154,7 +160,9 @@ void sendPacket(LinkPacket packet) {
     linkWritePacket(packet);
     if (linkError() != TW_SUCCESS) {
         i2c_detail::data.active = false;
+        return false;
     }
+    return true;
 }
 
 void processReceived() {
@@ -200,6 +208,22 @@ void processReceived() {
         latestState.puckY = packet.f;
         latestState.flags = packet.g;
         pendingState = true;
+    } else if (packet.kind == LINK_KIND_VISIT_PROFILE) {
+        latestVisitProfile.breathFrames = packet.a;
+        latestVisitProfile.playfulness = packet.b;
+        latestVisitProfile.fishPreference = packet.c;
+        latestVisitProfile.chickenPreference = packet.d;
+        latestVisitProfile.flags = packet.e;
+        pendingVisitProfile = true;
+    } else if (packet.kind == LINK_KIND_SPRITE_CHUNK) {
+        latestSpriteChunk.sprite = packet.a;
+        latestSpriteChunk.chunk = packet.b;
+        latestSpriteChunk.data[0] = packet.c;
+        latestSpriteChunk.data[1] = packet.d;
+        latestSpriteChunk.data[2] = packet.e;
+        latestSpriteChunk.data[3] = packet.f;
+        latestSpriteChunk.data[4] = packet.g;
+        pendingSpriteChunk = true;
     }
 }
 
@@ -295,6 +319,48 @@ bool linkConsumeState(LinkState &state) {
     return true;
 }
 
+bool linkSendVisitProfile(const LinkVisitProfile &profile) {
+    LinkPacket packet = {};
+    packet.kind = LINK_KIND_VISIT_PROFILE;
+    packet.a = profile.breathFrames;
+    packet.b = profile.playfulness;
+    packet.c = profile.fishPreference;
+    packet.d = profile.chickenPreference;
+    packet.e = profile.flags;
+    return sendPacket(packet);
+}
+
+bool linkConsumeVisitProfile(LinkVisitProfile &profile) {
+    if (!pendingVisitProfile) {
+        return false;
+    }
+    profile = latestVisitProfile;
+    pendingVisitProfile = false;
+    return true;
+}
+
+bool linkSendSpriteChunk(const LinkSpriteChunk &chunk) {
+    LinkPacket packet = {};
+    packet.kind = LINK_KIND_SPRITE_CHUNK;
+    packet.a = chunk.sprite;
+    packet.b = chunk.chunk;
+    packet.c = chunk.data[0];
+    packet.d = chunk.data[1];
+    packet.e = chunk.data[2];
+    packet.f = chunk.data[3];
+    packet.g = chunk.data[4];
+    return sendPacket(packet);
+}
+
+bool linkConsumeSpriteChunk(LinkSpriteChunk &chunk) {
+    if (!pendingSpriteChunk) {
+        return false;
+    }
+    chunk = latestSpriteChunk;
+    pendingSpriteChunk = false;
+    return true;
+}
+
 #else
 
 void linkBegin(uint32_t) {}
@@ -307,5 +373,9 @@ void linkSendInput(uint8_t, bool) {}
 bool linkConsumeInput(LinkInput &) { return false; }
 void linkSendState(const LinkState &) {}
 bool linkConsumeState(LinkState &) { return false; }
+bool linkSendVisitProfile(const LinkVisitProfile &) { return false; }
+bool linkConsumeVisitProfile(LinkVisitProfile &) { return false; }
+bool linkSendSpriteChunk(const LinkSpriteChunk &) { return false; }
+bool linkConsumeSpriteChunk(LinkSpriteChunk &) { return false; }
 
 #endif

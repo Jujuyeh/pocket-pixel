@@ -22,6 +22,7 @@ void scratching();
 void updateScratchSirenLed();
 void closeEyes(int16_t dx = 0);
 void clearZZZ();
+uint8_t idleBreathFrames();
 
 /************************************ GAME ************************************/
 
@@ -164,6 +165,8 @@ constexpr uint8_t HOCKEY_MIN_SPEED_Y = 17;
 constexpr uint8_t HOCKEY_MAX_SPEED_Y = 34;
 constexpr uint8_t HOCKEY_PADDLE_Y_HOST = 114;
 constexpr uint8_t HOCKEY_PADDLE_Y_CLIENT = 13;
+constexpr uint8_t VISIT_IDLE_SPRITE_SIZE = 2 + PET_IDLE_WIDTH * 3;
+constexpr uint8_t VISIT_IDLE_SPRITE_CHUNKS = (VISIT_IDLE_SPRITE_SIZE + LINK_SPRITE_CHUNK_BYTES - 1) / LINK_SPRITE_CHUNK_BYTES;
 #endif
 constexpr uint8_t BOOT_LOGO_X = 52;
 constexpr uint8_t BOOT_LOGO_Y = 26;
@@ -302,6 +305,19 @@ struct AirHockeyMinigame {
     uint8_t scoreFlashFrames = HOCKEY_ROUND_PAUSE_FRAMES;
     uint8_t exitHoldFrames = 0;
 };
+
+struct VisitTransfer {
+    bool active = false;
+    bool profileSent = false;
+    uint8_t sprite = LINK_VISIT_SPRITE_IDLE1;
+    uint8_t chunk = 0;
+};
+
+struct RemoteVisitData {
+    LinkVisitProfile profile = {};
+    uint16_t receivedChunks[2] = {};
+    uint8_t idleSprites[2][VISIT_IDLE_SPRITE_SIZE] = {};
+};
 #endif
 
 const uint8_t POOP_SHAPES[3][POOP_HEIGHT] = {
@@ -345,6 +361,8 @@ WaterMinigame waterGame;
 WalkMinigame walkGame;
 #ifdef POCKET_PIXEL_FXC_LINK
 AirHockeyMinigame hockeyGame;
+VisitTransfer visitTransfer;
+RemoteVisitData remoteVisit;
 #endif
 
 struct ToolOverlay {
@@ -856,6 +874,76 @@ void resetAirHockeyMinigame() {
 bool linkIdleActive() {
     return state == IDLE && linkPeerAvailable();
 }
+
+LinkVisitProfile localVisitProfile() {
+    LinkVisitProfile profile = {};
+    profile.breathFrames = idleBreathFrames();
+    profile.playfulness = ActivePersonality.playfulness;
+    profile.fishPreference = ActivePersonality.fishPreference;
+    profile.chickenPreference = ActivePersonality.chickenPreference;
+    return profile;
+}
+
+const uint8_t *visitSpriteData(uint8_t sprite) {
+    return sprite == LINK_VISIT_SPRITE_IDLE2 ? PET_IDLE2 : PET_IDLE1;
+}
+
+void startVisitTransfer() {
+    visitTransfer = VisitTransfer();
+    visitTransfer.active = true;
+}
+
+void updateVisitTransfer() {
+    LinkVisitProfile profile;
+    if (linkConsumeVisitProfile(profile)) {
+        remoteVisit.profile = profile;
+    }
+
+    LinkSpriteChunk receivedChunk;
+    if (linkConsumeSpriteChunk(receivedChunk)
+        && receivedChunk.sprite <= LINK_VISIT_SPRITE_IDLE2
+        && receivedChunk.chunk < VISIT_IDLE_SPRITE_CHUNKS) {
+        uint16_t offset = static_cast<uint16_t>(receivedChunk.chunk) * LINK_SPRITE_CHUNK_BYTES;
+        for (uint8_t i = 0; i < LINK_SPRITE_CHUNK_BYTES; i++) {
+            remoteVisit.idleSprites[receivedChunk.sprite][offset + i] = receivedChunk.data[i];
+        }
+        remoteVisit.receivedChunks[receivedChunk.sprite] |= 1U << receivedChunk.chunk;
+    }
+
+    if (!visitTransfer.active || !linkPeerAvailable()) {
+        return;
+    }
+
+    if (!visitTransfer.profileSent) {
+        if (linkSendVisitProfile(localVisitProfile())) {
+            visitTransfer.profileSent = true;
+        }
+        return;
+    }
+
+    if (visitTransfer.sprite > LINK_VISIT_SPRITE_IDLE2) {
+        visitTransfer.active = false;
+        return;
+    }
+
+    LinkSpriteChunk chunk = {};
+    chunk.sprite = visitTransfer.sprite;
+    chunk.chunk = visitTransfer.chunk;
+    uint16_t offset = static_cast<uint16_t>(chunk.chunk) * LINK_SPRITE_CHUNK_BYTES;
+    const uint8_t *spriteData = visitSpriteData(chunk.sprite);
+    for (uint8_t i = 0; i < LINK_SPRITE_CHUNK_BYTES; i++) {
+        chunk.data[i] = pgm_read_byte(spriteData + offset + i);
+    }
+    if (!linkSendSpriteChunk(chunk)) {
+        return;
+    }
+
+    visitTransfer.chunk++;
+    if (visitTransfer.chunk >= VISIT_IDLE_SPRITE_CHUNKS) {
+        visitTransfer.chunk = 0;
+        visitTransfer.sprite++;
+    }
+}
 #endif
 
 uint8_t feedBowlX() {
@@ -874,6 +962,15 @@ FeedItemType randomFoodType() {
         return random(0, 2) == 0 ? FEED_ITEM_FISH : FEED_ITEM_CHICKEN;
     }
     return random(0, total) < ActivePersonality.fishPreference ? FEED_ITEM_FISH : FEED_ITEM_CHICKEN;
+}
+
+uint8_t idleBreathFrames() {
+    if (ActivePersonality.anxiety <= 15) {
+        return framesAtGameFps(5);
+    }
+    uint8_t fasterSteps = (ActivePersonality.anxiety - 15) / 25;
+    uint8_t frames = framesAtGameFps(5);
+    return fasterSteps >= 5 ? framesAtGameFps(3) : frames - fasterSteps;
 }
 
 uint8_t feedItemWidth(FeedItemType type) {
@@ -2576,6 +2673,9 @@ bool idleMenuOpen = false;
 int16_t idleMenuX = MENU_CLOSED_X;
 
 #ifdef POCKET_PIXEL_FXC_LINK
+bool linkInviteConfirmOpen = false;
+bool linkInviteConfirmYes = true;
+
 void prepareLinkedIdle() {
     if (!linkIdleActive()) {
         return;
@@ -2584,6 +2684,46 @@ void prepareLinkedIdle() {
     petUnset(SCRATCHING);
     clearZZZ();
     idleMenuOpen = false;
+}
+
+void closeLinkInviteConfirm() {
+    linkInviteConfirmOpen = false;
+    linkInviteConfirmYes = true;
+}
+
+void drawLinkInviteConfirm() {
+    arduboy.fillRect(34, 18, 60, 27, WHITE);
+    arduboy.drawRect(34, 18, 60, 27, BLACK);
+    tinyfont.setCursor(48, 23);
+    tinyfont.print("INVITE?");
+    tinyfont.setCursor(43, 35);
+    tinyfont.print(linkInviteConfirmYes ? ">YES" : " YES");
+    tinyfont.setCursor(68, 35);
+    tinyfont.print(linkInviteConfirmYes ? " NO" : ">NO");
+}
+
+bool handleLinkInviteConfirm() {
+    if (!linkInviteConfirmOpen) {
+        return false;
+    }
+    if (arduboy.justPressed(LEFT_BUTTON) || arduboy.justPressed(RIGHT_BUTTON)) {
+        linkInviteConfirmYes = !linkInviteConfirmYes;
+    }
+    if (arduboy.justPressed(A_BUTTON)) {
+        closeLinkInviteConfirm();
+        return true;
+    }
+    if (arduboy.justPressed(B_BUTTON)) {
+        bool accepted = linkInviteConfirmYes;
+        closeLinkInviteConfirm();
+        if (accepted) {
+            startVisitTransfer();
+            linkSendInvite();
+            setState(AIR_HOCKEY);
+        }
+        return true;
+    }
+    return true;
 }
 #endif
 
@@ -2919,21 +3059,28 @@ void randomEmotion() {
 void idle() {
 #ifdef POCKET_PIXEL_FXC_LINK
     if (linkConsumeInvite()) {
+        closeLinkInviteConfirm();
+        startVisitTransfer();
         prepareLinkedIdle();
         setState(AIR_HOCKEY);
         return;
     }
     prepareLinkedIdle();
     bool linkedIdle = linkIdleActive();
-    if (linkedIdle && arduboy.justPressed(A_BUTTON)) {
-        linkSendInvite();
-        setState(AIR_HOCKEY);
-        return;
+    if (!linkedIdle) {
+        closeLinkInviteConfirm();
+    } else if (!linkInviteConfirmOpen && arduboy.justPressed(A_BUTTON)) {
+        linkInviteConfirmOpen = true;
+    }
+    if (handleLinkInviteConfirm()) {
+        if (state != IDLE) {
+            return;
+        }
     }
 #endif
     if (arduboy.justPressed(B_BUTTON)) {
 #ifdef POCKET_PIXEL_FXC_LINK
-        if (linkedIdle) {
+        if (linkedIdle || linkInviteConfirmOpen) {
             return;
         }
 #endif
@@ -2949,7 +3096,7 @@ void idle() {
     int16_t petDx = petX - PET_IDLE_DRAW_X;
 
     // Idle overlays are offset by petDx so menu animation does not desync them.
-    if ((frameCounter / framesAtGameFps(15)) % 2 == 0 || petHas(ANXIOUS) || petHas(BORED)) {
+    if ((frameCounter / idleBreathFrames()) % 2 == 0 || petHas(ANXIOUS) || petHas(BORED)) {
         Sprites::drawOverwrite(petX, PET_IDLE_DRAW_Y, PET_IDLE2, 0);
     } else {
         Sprites::drawOverwrite(petX, PET_IDLE_DRAW_Y, PET_IDLE1, 0);
@@ -2961,8 +3108,11 @@ void idle() {
         drawLifeBar(arduboy);
         drawXpBar(arduboy, tinyfont, 2, idleXpWidth());
         tinyfont.setCursor(45, 4);
-        tinyfont.print("A LINK");
+        tinyfont.print("INVITE?");
         drawLinkSurpriseMark(petX);
+        if (linkInviteConfirmOpen) {
+            drawLinkInviteConfirm();
+        }
         return;
     }
 #endif
@@ -3017,6 +3167,7 @@ void gameLoop() {
     frameCounter++;
 #ifdef POCKET_PIXEL_FXC_LINK
     linkUpdate(state == IDLE || state == AIR_HOCKEY);
+    updateVisitTransfer();
 #endif
     if (state != CLEAN) {
         // Clean owns the framebuffer for its litter canvas and redraws incrementally.
