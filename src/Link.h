@@ -31,11 +31,11 @@ enum LinkVisitSprite : uint8_t {
 };
 
 struct LinkVisitProfile {
+    uint16_t meowNote;
     uint8_t breathFrames;
     uint8_t playfulness;
     uint8_t fishPreference;
     uint8_t chickenPreference;
-    uint8_t flags;
 };
 
 struct LinkSpriteChunk {

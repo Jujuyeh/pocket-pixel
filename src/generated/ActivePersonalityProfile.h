@@ -10,13 +10,14 @@ const uint16_t PROGMEM PixelMenuMelody[] = {
 };
 
 const uint16_t PROGMEM PixelMeowTone[] = {
-  NOTE_A5, 66, NOTE_AS5, 66, NOTE_A5, 66, NOTE_GS5, 66, TONES_END
+  NOTE_A5, 56, NOTE_AS5, 56, NOTE_A5, 56, NOTE_GS5, 56, TONES_END
 };
 
 struct PersonalityProfile {
   const char *name;
   const uint16_t *menuMelody;
   const uint16_t *meowTone;
+  uint16_t meowNote;
   uint8_t menuMelodyLength;
   uint8_t playfulness;
   uint8_t anxiety;
@@ -36,6 +37,7 @@ constexpr PersonalityProfile PixelPersonality = {
   "Pixel",
   PixelMenuMelody,
   PixelMeowTone,
+  NOTE_A5,
   30,
   30,
   15,
