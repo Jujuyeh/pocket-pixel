@@ -42,6 +42,7 @@ BEHAVIOR_RANGES = {
     "chanceBored": (1, 255),
     "chanceAnxious": (1, 255),
     "chanceScratching": (1, 255),
+    "chanceMeow": (1, 255),
     "feedCost": (0, 255),
     "fishPreference": (0, 100),
     "chickenPreference": (0, 100),
@@ -100,6 +101,9 @@ def validate_profile(data: dict[str, Any]) -> None:
     for key in REQUIRED_BEHAVIOR:
         minimum, maximum = BEHAVIOR_RANGES[key]
         require_int(f"behavior.{key}", behavior[key], minimum, maximum)
+    if "chanceMeow" in behavior:
+        minimum, maximum = BEHAVIOR_RANGES["chanceMeow"]
+        require_int("behavior.chanceMeow", behavior["chanceMeow"], minimum, maximum)
 
     assets = data.get("assets", {})
     if assets is not None and not isinstance(assets, dict):
@@ -118,6 +122,10 @@ def validate_profile(data: dict[str, Any]) -> None:
             for index, note in enumerate(menu_melody):
                 if not isinstance(note, str) or not NOTE_PATTERN.match(note.upper()):
                     raise ValueError(f"audio.menuMelody[{index}] must be a note like C5, CS5, or REST")
+        meow_note = audio.get("meowNote")
+        if meow_note is not None:
+            if not isinstance(meow_note, str) or not NOTE_PATTERN.match(meow_note.upper()) or meow_note.upper() == "REST":
+                raise ValueError("audio.meowNote must be a note like C5 or FS4")
 
 
 def symbol_name(name: str) -> str:
@@ -142,6 +150,8 @@ def render_header(data: dict[str, Any]) -> str:
     validate_profile(data)
     behavior = data["behavior"]
     menu_melody = data.get("audio", {}).get("menuMelody", DEFAULT_MENU_MELODY)
+    chance_meow = behavior.get("chanceMeow", 190)
+    meow_note = data.get("audio", {}).get("meowNote", "A5")
     melody_values = ", ".join(note_symbol(note) for note in menu_melody)
     sym = symbol_name(data["name"])
     return f"""#pragma once
@@ -167,9 +177,11 @@ struct PersonalityProfile {{
   uint8_t chanceBored;
   uint8_t chanceAnxious;
   uint8_t chanceScratching;
+  uint8_t chanceMeow;
   uint8_t feedCost;
   uint8_t fishPreference;
   uint8_t chickenPreference;
+  uint16_t meowNote;
 }};
 
 constexpr PersonalityProfile {sym}Personality = {{
@@ -184,9 +196,11 @@ constexpr PersonalityProfile {sym}Personality = {{
   {behavior["chanceBored"]},
   {behavior["chanceAnxious"]},
   {behavior["chanceScratching"]},
+  {chance_meow},
   {behavior["feedCost"]},
   {behavior["fishPreference"]},
   {behavior["chickenPreference"]},
+  {note_symbol(meow_note)},
 }};
 
 constexpr const PersonalityProfile &ActivePersonality = {sym}Personality;
@@ -198,6 +212,7 @@ def summarize(data: dict[str, Any]) -> str:
     traits = data["traits"]
     behavior = data["behavior"]
     menu_melody = data.get("audio", {}).get("menuMelody", DEFAULT_MENU_MELODY)
+    chance_meow = behavior.get("chanceMeow", 190)
     lines = [
         f"{data['name']} ({data['species']})",
         f"  sleepiness={traits['sleepiness']} appetite={traits['appetite']} bathroom={traits['bathroomFrequency']}",
@@ -210,6 +225,7 @@ def summarize(data: dict[str, Any]) -> str:
         f"bored 1/{behavior['chanceBored']}, "
         f"anxious 1/{behavior['chanceAnxious']}, "
         f"scratch 1/{behavior['chanceScratching']}, "
+        f"meow 1/{chance_meow}, "
         f"feedCost {behavior['feedCost']}, "
         f"fish {behavior['fishPreference']}, "
         f"chicken {behavior['chickenPreference']}",

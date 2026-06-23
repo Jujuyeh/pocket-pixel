@@ -21,9 +21,11 @@ struct PersonalityProfile {
   uint8_t chanceBored;
   uint8_t chanceAnxious;
   uint8_t chanceScratching;
+  uint8_t chanceMeow;
   uint8_t feedCost;
   uint8_t fishPreference;
   uint8_t chickenPreference;
+  uint16_t meowNote;
 };
 
 constexpr PersonalityProfile PixelPersonality = {
@@ -38,9 +40,11 @@ constexpr PersonalityProfile PixelPersonality = {
   180,
   255,
   255,
+  190,
   20,
   50,
   50,
+  NOTE_A5,
 };
 
 constexpr const PersonalityProfile &ActivePersonality = PixelPersonality;

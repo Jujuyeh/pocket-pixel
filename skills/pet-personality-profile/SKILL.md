@@ -85,6 +85,7 @@ Minimum JSON shape:
     "chanceBored": 120,
     "chanceAnxious": 200,
     "chanceScratching": 250,
+    "chanceMeow": 190,
     "feedCost": 20,
     "fishPreference": 50,
     "chickenPreference": 50
@@ -93,6 +94,7 @@ Minimum JSON shape:
     "banner": "assets/fx/banner.png"
   },
   "audio": {
+    "meowNote": "A5",
     "menuMelody": ["E5", "E5", "F5", "G5", "G5", "F5", "E5", "D5"]
   }
 }

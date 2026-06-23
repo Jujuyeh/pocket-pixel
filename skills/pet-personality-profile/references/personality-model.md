@@ -53,6 +53,7 @@ Current recovered baseline:
   "chanceBored": 120,
   "chanceAnxious": 200,
   "chanceScratching": 250,
+  "chanceMeow": 190,
   "feedCost": 20,
   "fishPreference": 50,
   "chickenPreference": 50
@@ -70,6 +71,8 @@ Suggested derivation ranges:
 - `chanceAnxious`: 70 to 255; lower for anxious/restless cats.
 - `chanceScratching`: 90 to 255; lower for itchy, dramatic, or high-maintenance
   cats.
+- `chanceMeow`: 60 to 255; lower for talkative cats. Dirty pets get a runtime
+  boost without needing a separate profile value.
 - `feedCost`: 10 to 40; higher only if balancing economy asks for it.
 - `fishPreference`: 0 to 100; relative spawn weight for fish in the feed
   minigame.
@@ -89,9 +92,12 @@ field in the profile.
 menu cursor sound. Each successful cursor move plays the next note and wraps at
 the end.
 
-Use note strings such as `C5`, `CS5`, `D5`, or `REST`. `C#5` is accepted and
-generated as `NOTE_CS5`. Keep melodies short; the validator caps the sequence
-at 64 notes to keep Arduboy flash usage predictable.
+`audio.meowNote` is an optional note name used as the pet's short meow pitch.
+
+Use note strings such as `C5`, `CS5`, `D5`, or `REST` for melodies. `C#5` is
+accepted and generated as `NOTE_CS5`. Keep melodies short; the validator caps
+the sequence at 64 notes to keep Arduboy flash usage predictable. `meowNote`
+must be a real note, not `REST`.
 
 ## Mapping Guidance
 

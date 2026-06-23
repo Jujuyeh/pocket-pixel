@@ -44,6 +44,9 @@ On the idle screen:
 - Up/down move the menu cursor while the drawer is open.
 - Each successful cursor move plays the next short note in a looping
   menu-navigation melody from the active personality profile.
+- When the pet is otherwise idle, it may meow using the active profile's meow
+  chance and pitch. `MEOW` appears below the sleep-Z area while the sound plays.
+  Dirty pets are slightly more likely to meow.
 - B selects the highlighted action while the drawer is open. Pressing B while
   the drawer is closed opens it.
 - The command drawer is closed by default and keeps a narrow strip visible as
@@ -243,8 +246,9 @@ personality packet plus the two 26x24 idle frames in 5-byte sprite chunks. The
 invited pet walks down offscreen, waits briefly, then a shop-style shutter drops
 before a small `MENU` panel appears. The inviting console keeps its pet onscreen
 and draws the invited pet arriving from the bottom once both idle frames have
-been received. The menu currently shows `BALL`, `WATER`, and `FOOD`; all three
-entries launch Ball Hunt until Water Battle and Food Rush are implemented.
+been received. The menu currently shows `BALL`, `WATER`, and `FOOD`; up/down
+wrap around the list, and all three entries launch Ball Hunt until Water Battle
+and Food Rush are implemented.
 
 Controls:
 

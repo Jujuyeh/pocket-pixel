@@ -26,6 +26,7 @@
     "chanceBored": 180,
     "chanceAnxious": 255,
     "chanceScratching": 255,
+    "chanceMeow": 190,
     "feedCost": 20,
     "fishPreference": 50,
     "chickenPreference": 50
@@ -34,6 +35,7 @@
     "banner": "assets/fx/banner.png"
   },
   "audio": {
+    "meowNote": "A5",
     "menuMelody": [
       "E5",
       "E5",

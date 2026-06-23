@@ -172,6 +172,10 @@ constexpr uint8_t VISIT_LEAVE_FRAMES = framesAtGameFps(10);
 constexpr uint8_t VISIT_PAUSE_FRAMES = framesAtGameFps(6);
 constexpr uint8_t VISIT_SHUTTER_FRAMES = framesAtGameFps(14);
 #endif
+constexpr uint8_t MEOW_FRAMES = framesAtGameFps(8);
+constexpr uint8_t MEOW_REPEAT_CHANCE = 14;
+constexpr uint8_t MEOW_TEXT_X = 54;
+constexpr uint8_t MEOW_TEXT_Y = 26;
 constexpr uint8_t BOOT_LOGO_X = 52;
 constexpr uint8_t BOOT_LOGO_Y = 26;
 constexpr uint8_t BOOT_DUST_START_FRAMES = framesAtGameFps(20);
@@ -2602,7 +2606,7 @@ void drawRamSpriteMirrored(int16_t x, int16_t y, const uint8_t *sprite) {
                 if (sy >= h) {
                     continue;
                 }
-                if ((bits & (1 << bit)) != 0) {
+                if ((bits & (1 << bit)) == 0) {
                     arduboy.drawPixel(x + w - 1 - sx, y + sy, BLACK);
                 }
             }
@@ -2679,12 +2683,12 @@ void visitMenu() {
         return;
     }
     if (visitMenuState.frame >= VISIT_LEAVE_FRAMES + VISIT_PAUSE_FRAMES + VISIT_SHUTTER_FRAMES) {
-        if (arduboy.justPressed(UP_BUTTON) && visitMenuState.selected > 0) {
-            visitMenuState.selected--;
+        if (arduboy.justPressed(UP_BUTTON)) {
+            visitMenuState.selected = visitMenuState.selected == 0 ? 2 : visitMenuState.selected - 1;
             playMenuMoveTone();
         }
-        if (arduboy.justPressed(DOWN_BUTTON) && visitMenuState.selected < 2) {
-            visitMenuState.selected++;
+        if (arduboy.justPressed(DOWN_BUTTON)) {
+            visitMenuState.selected = visitMenuState.selected == 2 ? 0 : visitMenuState.selected + 1;
             playMenuMoveTone();
         }
         if (arduboy.justPressed(B_BUTTON)) {
@@ -2817,6 +2821,7 @@ constexpr uint8_t MENU_MOVE_TONE_MS = 38;
 
 uint8_t selectedAction = ACTION_FEED;
 uint8_t menuMelodyIndex = 0;
+uint8_t meowFrames = 0;
 bool idleMenuOpen = false;
 int16_t idleMenuX = MENU_CLOSED_X;
 
@@ -2938,6 +2943,44 @@ void playMenuMoveTone() {
     if (menuMelodyIndex >= ActivePersonality.menuMelodyLength) {
         menuMelodyIndex = 0;
     }
+}
+
+bool petCanMeow() {
+    return !petHas(SLEEPING) && !petHas(BORED) && !petHas(ANXIOUS) && !petHas(SCRATCHING);
+}
+
+void startMeow() {
+    meowFrames = MEOW_FRAMES;
+    sound.tone(ActivePersonality.meowNote, 70);
+}
+
+void updateMeow() {
+    if (meowFrames > 0) {
+        meowFrames--;
+        if (meowFrames == 0 && petCanMeow() && random(0, MEOW_REPEAT_CHANCE) == 0) {
+            startMeow();
+        }
+        return;
+    }
+    if (!arduboy.everyXFrames(framesAtGameFps(30))) {
+        return;
+    }
+
+    uint8_t chanceMeow = ActivePersonality.chanceMeow;
+    if (petHas(DIRTY) && chanceMeow > 1) {
+        chanceMeow /= 2;
+    }
+    if (petCanMeow() && random(0, chanceMeow) == 0) {
+        startMeow();
+    }
+}
+
+void drawMeow(int16_t dx) {
+    if (meowFrames == 0) {
+        return;
+    }
+    tinyfont.setCursor(MEOW_TEXT_X + dx, MEOW_TEXT_Y);
+    tinyfont.print("MEOW");
 }
 
 // Item selection gates each minigame by its corresponding pet need.
@@ -3175,6 +3218,9 @@ void initChances() {
 uint8_t bootBias = 10;
 // Random status changes are biased down at boot to avoid instant chaos on load.
 void randomEmotion() {
+    if (meowFrames > 0) {
+        return;
+    }
     bool sleeping = petHas(SLEEPING);
     for (uint8_t i = 0; i < PET_STATUS_COUNT; i++) {
         if (sleeping && i != SLEEPING) {
@@ -3284,6 +3330,7 @@ void idle() {
     if (arduboy.everyXFrames(framesAtGameFps(30))) {
         randomEmotion();
     }
+    updateMeow();
 
     menu();
     drawLifeBar(arduboy);
@@ -3300,6 +3347,7 @@ void idle() {
         if (petHas(SCRATCHING))  scratching();
     }
     if (!sleeping && petHas(DIRTY)) dirty(petDx);
+    if (!sleeping) drawMeow(petDx);
 }
 
 /************************** MAIN **************************/
