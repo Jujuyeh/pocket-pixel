@@ -205,8 +205,8 @@ Space expectation after measurement:
 - Stable currently leaves 4,650 bytes of flash and 999 bytes of RAM.
 - Debug leaves 3,972 bytes of flash and 955 bytes of RAM.
 - FX-C with Ball Hunt, Water Battle, invite confirmation, visit-data exchange,
-  host-side remote pet drawing, visit menu, conversations, and profile-driven
-  meows leaves 922 bytes of flash and 793 bytes of RAM.
+  host-side remote pet drawing, visit menu, lightweight linked meows, and
+  profile-driven meows leaves 698 bytes of flash and 788 bytes of RAM.
 - More FX-C gameplay now requires careful budgeting; avoid large bitmaps and
   broad abstractions.
 - The FX-C build keeps the custom boot animation, but uses a procedural Play

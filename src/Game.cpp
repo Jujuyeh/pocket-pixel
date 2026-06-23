@@ -175,8 +175,10 @@ constexpr uint8_t VISIT_LEAVE_FRAMES = framesAtGameFps(10);
 constexpr uint8_t VISIT_PAUSE_FRAMES = framesAtGameFps(6);
 constexpr uint8_t VISIT_SHUTTER_FRAMES = framesAtGameFps(14);
 constexpr uint8_t VISIT_TOPIC_FRAMES = framesAtGameFps(50);
+constexpr uint8_t VISIT_MEOW_INTERVAL_FRAMES = framesAtGameFps(8);
+constexpr uint8_t VISIT_MEOW_TEXT_FRAMES = framesAtGameFps(2);
 #endif
-constexpr uint8_t MEOW_FRAMES = framesAtGameFps(8);
+constexpr uint8_t MEOW_FRAMES = framesAtGameFps(7);
 constexpr uint8_t MEOW_REPEAT_CHANCE = 14;
 constexpr uint8_t MEOW_TEXT_X = 54;
 constexpr uint8_t MEOW_TEXT_Y = 26;
@@ -361,6 +363,9 @@ struct VisitHostState {
     uint8_t frame = 0;
     uint8_t topic = VISIT_TOPIC_NONE;
     uint8_t topicFrames = 0;
+    uint8_t meowFrames = 0;
+    uint8_t meowDelay = 0;
+    uint8_t speaker = 0;
 };
 #endif
 
@@ -943,6 +948,7 @@ bool linkIdleActive() {
 
 LinkVisitProfile localVisitProfile() {
     LinkVisitProfile profile = {};
+    profile.meowNote = ActivePersonality.meowNote;
     profile.breathFrames = idleBreathFrames();
     profile.playfulness = ActivePersonality.playfulness;
     profile.fishPreference = ActivePersonality.fishPreference;
@@ -2778,11 +2784,37 @@ void chooseVisitTopic() {
         visitHostState.topic = VISIT_TOPIC_NONE;
     } else {
         visitHostState.topic = roll - 1;
-        if (visitHostState.topic == VISIT_TOPIC_MEOW) {
-            sound.tones(ActivePersonality.meowTone);
-        }
     }
     visitHostState.topicFrames = VISIT_TOPIC_FRAMES;
+    visitHostState.meowFrames = 0;
+    visitHostState.meowDelay = 2;
+    visitHostState.speaker = random(0, 2);
+}
+
+uint16_t visitMeowNote() {
+    if (visitHostState.speaker == 0 || remoteVisit.profile.meowNote == 0) {
+        return ActivePersonality.meowNote;
+    }
+    return remoteVisit.profile.meowNote;
+}
+
+void updateVisitMeow() {
+    if (visitHostState.topic == VISIT_TOPIC_NONE || visitHostState.topicFrames == 0) {
+        visitHostState.meowFrames = 0;
+        return;
+    }
+    if (visitHostState.meowFrames > 0) {
+        visitHostState.meowFrames--;
+    }
+    if (visitHostState.meowDelay > 0) {
+        visitHostState.meowDelay--;
+        return;
+    }
+    uint16_t note = visitMeowNote();
+    sound.tone(note, 38);
+    visitHostState.meowFrames = VISIT_MEOW_TEXT_FRAMES;
+    visitHostState.meowDelay = VISIT_MEOW_INTERVAL_FRAMES + ((frameCounter >> 3) & 7);
+    visitHostState.speaker ^= 1;
 }
 
 void updateVisitConversation() {
@@ -2794,6 +2826,7 @@ void updateVisitConversation() {
 
     if (visitHostState.topicFrames > 0) {
         visitHostState.topicFrames--;
+        updateVisitMeow();
         return;
     }
     chooseVisitTopic();
@@ -2838,12 +2871,20 @@ void drawVisitTopic() {
         drawVisitCross(60, 10);
         break;
     case VISIT_TOPIC_MEOW:
-        tinyfont.setCursor(55, 12);
-        tinyfont.print("MEOW");
         break;
     default:
         break;
     }
+}
+
+void drawVisitMeowText() {
+    if (visitHostState.meowFrames == 0 || visitHostState.topic == VISIT_TOPIC_NONE) {
+        return;
+    }
+    int8_t x = visitHostState.speaker == 0 ? 62 : 39;
+    int8_t y = 25 + ((frameCounter >> 1) & 3);
+    tinyfont.setCursor(x, y);
+    tinyfont.print("MEOW");
 }
 
 void drawVisitHostScene() {
@@ -2864,6 +2905,7 @@ void drawVisitHostScene() {
     }
     updateVisitConversation();
     drawVisitTopic();
+    drawVisitMeowText();
 }
 
 void drawVisitMenu() {
