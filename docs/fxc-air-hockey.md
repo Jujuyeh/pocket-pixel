@@ -28,10 +28,9 @@ choose `YES` or `NO`, `B` confirms, and `A` cancels.
 
 After an invite, the invited pet leaves its own console, the guest console drops
 a shutter menu, and the host console keeps both pets together. While both pets
-are on the host screen, a 5-second conversation cycle runs between them. 25% of
-cycles stay fully silent. The rest choose heart, chicken, fish, spiral, cross,
-or an empty topic; while a topic is active, both pets alternate short meow
-patterns using their own profile pitch.
+are on the host screen, a 5-second conversation cycle runs between them: 25% of
+cycles stay silent, and the rest are evenly split between heart, chicken, fish,
+spiral, cross, or a plain `MEOW` without a topic.
 
 ## Ball Hunt Controls
 

@@ -219,7 +219,7 @@ void processReceived() {
         latestVisitProfile.playfulness = packet.b;
         latestVisitProfile.fishPreference = packet.c;
         latestVisitProfile.chickenPreference = packet.d;
-        latestVisitProfile.meowNote = packet.e | (static_cast<uint16_t>(packet.f) << 8);
+        latestVisitProfile.flags = packet.e;
         pendingVisitProfile = true;
     } else if (packet.kind == LINK_KIND_SPRITE_CHUNK) {
         latestSpriteChunk.sprite = packet.a;
@@ -348,8 +348,7 @@ bool linkSendVisitProfile(const LinkVisitProfile &profile) {
     packet.b = profile.playfulness;
     packet.c = profile.fishPreference;
     packet.d = profile.chickenPreference;
-    packet.e = profile.meowNote & 0xFF;
-    packet.f = profile.meowNote >> 8;
+    packet.e = profile.flags;
     return sendPacket(packet);
 }
 

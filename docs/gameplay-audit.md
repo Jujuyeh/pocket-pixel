@@ -266,17 +266,14 @@ invited pet walks down offscreen, waits briefly, then a shop-style shutter drops
 before a small `MENU` panel appears. The inviting console keeps its pet onscreen
 and draws the invited pet arriving from the bottom once both idle frames have
 been received. The menu currently shows `BALL`, `WATER`, and `FOOD`; up/down
-wrap around the list. `BALL` launches Ball Hunt, `WATER` launches Water Battle,
-and `FOOD` is protocol-reserved but still falls back to Ball Hunt until Food
-Rush is implemented.
+wrap around the list, and all three entries launch Ball Hunt until Water Battle
+and Food Rush are implemented.
 
 When both pets are together on the inviting console, a lightweight conversation
-cycle runs every 5 seconds. Each cycle has a 25% chance to be fully silent. The
+cycle runs every 5 seconds. Each cycle has a 25% chance to show no topic. The
 remaining outcomes are evenly split between a heart, chicken, fish, spiral,
-cross, or an empty topic. While a non-silent topic is active, the pets alternate
-short random meow patterns using their own profile pitch; the guest profile
-pitch is sent over the link with the visit data. The heart, chicken, and fish
-reuse existing game sprites; the spiral and cross are drawn procedurally.
+cross, or a `MEOW` without a topic. The heart, chicken, and fish reuse existing
+game sprites; the spiral and cross are drawn procedurally.
 
 Controls:
 

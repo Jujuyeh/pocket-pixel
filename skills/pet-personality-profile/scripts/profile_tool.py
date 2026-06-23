@@ -167,7 +167,7 @@ def render_header(data: dict[str, Any]) -> str:
     chance_meow = behavior.get("chanceMeow", 190)
     meow_note = data.get("audio", {}).get("meowNote", "A5")
     melody_values = ", ".join(note_symbol(note) for note in menu_melody)
-    meow_duration = 56
+    meow_duration = 66
     meow_values = ", ".join((
         note_symbol(meow_note), str(meow_duration),
         adjacent_note_symbol(meow_note, 1), str(meow_duration),
@@ -195,7 +195,6 @@ struct PersonalityProfile {{
   const char *name;
   const uint16_t *menuMelody;
   const uint16_t *meowTone;
-  uint16_t meowNote;
   uint8_t menuMelodyLength;
   uint8_t playfulness;
   uint8_t anxiety;
@@ -215,7 +214,6 @@ constexpr PersonalityProfile {sym}Personality = {{
   {c_string(data["name"])},
   {sym}MenuMelody,
   {sym}MeowTone,
-  {note_symbol(meow_note)},
   {len(menu_melody)},
   {data["traits"]["playfulness"]},
   {data["traits"]["anxiety"]},
