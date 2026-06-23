@@ -3069,13 +3069,12 @@ void idle() {
     bool linkedIdle = linkIdleActive();
     if (!linkedIdle) {
         closeLinkInviteConfirm();
-    } else if (!linkInviteConfirmOpen && arduboy.justPressed(A_BUTTON)) {
-        linkInviteConfirmOpen = true;
-    }
-    if (handleLinkInviteConfirm()) {
-        if (state != IDLE) {
+    } else if (linkInviteConfirmOpen) {
+        if (handleLinkInviteConfirm() && state != IDLE) {
             return;
         }
+    } else if (arduboy.justPressed(A_BUTTON)) {
+        linkInviteConfirmOpen = true;
     }
 #endif
     if (arduboy.justPressed(B_BUTTON)) {
