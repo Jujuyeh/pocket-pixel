@@ -15,6 +15,7 @@ constexpr uint8_t LINK_KIND_INPUT = 3;
 constexpr uint8_t LINK_KIND_STATE = 4;
 constexpr uint8_t LINK_KIND_VISIT_PROFILE = 5;
 constexpr uint8_t LINK_KIND_SPRITE_CHUNK = 6;
+constexpr uint8_t LINK_KIND_GAME_START = 7;
 constexpr uint8_t LINK_ADDRESS = 0x08;
 constexpr uint8_t LINK_SEND_ADDRESS = 0x00;
 constexpr uint8_t LINK_PEER_TIMEOUT_FRAMES = 45;
@@ -49,6 +50,7 @@ uint8_t txActiveFrames = 0;
 bool peerAvailable = false;
 bool linkStarted = false;
 bool pendingInvite = false;
+bool pendingGameStart = false;
 bool pendingInput = false;
 bool pendingState = false;
 bool pendingVisitProfile = false;
@@ -195,6 +197,8 @@ void processReceived() {
 
     if (packet.kind == LINK_KIND_INVITE) {
         pendingInvite = true;
+    } else if (packet.kind == LINK_KIND_GAME_START) {
+        pendingGameStart = true;
     } else if (packet.kind == LINK_KIND_INPUT) {
         latestInput.x = packet.a;
         latestInput.strike = packet.b != 0;
@@ -277,6 +281,20 @@ bool linkConsumeInvite() {
 void linkSendInvite() {
     LinkPacket packet = {};
     packet.kind = LINK_KIND_INVITE;
+    sendPacket(packet);
+}
+
+bool linkConsumeGameStart() {
+    if (!pendingGameStart) {
+        return false;
+    }
+    pendingGameStart = false;
+    return true;
+}
+
+void linkSendGameStart() {
+    LinkPacket packet = {};
+    packet.kind = LINK_KIND_GAME_START;
     sendPacket(packet);
 }
 
@@ -369,6 +387,8 @@ bool linkPeerAvailable() { return false; }
 bool linkLocalIsHost() { return true; }
 bool linkConsumeInvite() { return false; }
 void linkSendInvite() {}
+bool linkConsumeGameStart() { return false; }
+void linkSendGameStart() {}
 void linkSendInput(uint8_t, bool) {}
 bool linkConsumeInput(LinkInput &) { return false; }
 void linkSendState(const LinkState &) {}

@@ -44,6 +44,8 @@ bool linkPeerAvailable();
 bool linkLocalIsHost();
 bool linkConsumeInvite();
 void linkSendInvite();
+bool linkConsumeGameStart();
+void linkSendGameStart();
 void linkSendInput(uint8_t x, bool strike);
 bool linkConsumeInput(LinkInput &input);
 void linkSendState(const LinkState &state);

@@ -2593,7 +2593,7 @@ void visitMenu() {
         setState(IDLE);
         return;
     }
-    if (linkConsumeInvite()) {
+    if (linkConsumeGameStart()) {
         setState(AIR_HOCKEY);
         return;
     }
@@ -2607,7 +2607,7 @@ void visitMenu() {
             playMenuMoveTone();
         }
         if (arduboy.justPressed(B_BUTTON)) {
-            linkSendInvite();
+            linkSendGameStart();
             setState(AIR_HOCKEY);
             return;
         }
@@ -2786,7 +2786,6 @@ bool handleLinkInviteConfirm() {
         if (accepted) {
             startVisitTransfer();
             linkSendInvite();
-            startVisitMenu();
         }
         return true;
     }
@@ -3125,6 +3124,10 @@ void randomEmotion() {
 
 void idle() {
 #ifdef POCKET_PIXEL_FXC_LINK
+    if (linkConsumeGameStart()) {
+        setState(AIR_HOCKEY);
+        return;
+    }
     if (linkConsumeInvite()) {
         closeLinkInviteConfirm();
         startVisitTransfer();
