@@ -45,8 +45,10 @@ On the idle screen:
 - Each successful cursor move plays the next short note in a looping
   menu-navigation melody from the active personality profile.
 - When the pet is otherwise idle, it may meow using the active profile's meow
-  chance and pitch. `MEOW` appears below the sleep-Z area while the sound plays.
-  Dirty pets are slightly more likely to meow.
+  chance and pitch. The sound is a four-note pattern based on the profile note:
+  base, one semitone up, base, one semitone down. `MEOW` appears below the
+  sleep-Z area while the sound plays. Dirty pets are slightly more likely to
+  meow.
 - B selects the highlighted action while the drawer is open. Pressing B while
   the drawer is closed opens it.
 - The command drawer is closed by default and keeps a narrow strip visible as

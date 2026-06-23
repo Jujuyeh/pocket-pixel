@@ -49,6 +49,7 @@ BEHAVIOR_RANGES = {
 }
 
 NOTE_PATTERN = re.compile(r"^(REST|[A-G](?:S|#)?[0-8])$")
+NOTE_NAMES = ("C", "CS", "D", "DS", "E", "F", "FS", "G", "GS", "A", "AS", "B")
 
 DEFAULT_MENU_MELODY = [
     "E5", "E5", "F5", "G5", "G5", "F5", "E5", "D5",
@@ -146,6 +147,19 @@ def note_symbol(note: str) -> str:
     return f"NOTE_{normalized}"
 
 
+def adjacent_note_symbol(note: str, offset: int) -> str:
+    normalized = note.upper().replace("#", "S")
+    if normalized == "REST":
+        raise ValueError("REST cannot be used as a meow base note")
+    name = normalized[:-1]
+    octave = int(normalized[-1])
+    index = NOTE_NAMES.index(name) + octave * len(NOTE_NAMES) + offset
+    min_index = 0
+    max_index = 8 * len(NOTE_NAMES) + len(NOTE_NAMES) - 1
+    index = max(min_index, min(max_index, index))
+    return f"NOTE_{NOTE_NAMES[index % len(NOTE_NAMES)]}{index // len(NOTE_NAMES)}"
+
+
 def render_header(data: dict[str, Any]) -> str:
     validate_profile(data)
     behavior = data["behavior"]
@@ -153,6 +167,14 @@ def render_header(data: dict[str, Any]) -> str:
     chance_meow = behavior.get("chanceMeow", 190)
     meow_note = data.get("audio", {}).get("meowNote", "A5")
     melody_values = ", ".join(note_symbol(note) for note in menu_melody)
+    meow_duration = 66
+    meow_values = ", ".join((
+        note_symbol(meow_note), str(meow_duration),
+        adjacent_note_symbol(meow_note, 1), str(meow_duration),
+        note_symbol(meow_note), str(meow_duration),
+        adjacent_note_symbol(meow_note, -1), str(meow_duration),
+        "TONES_END",
+    ))
     sym = symbol_name(data["name"])
     return f"""#pragma once
 
@@ -165,9 +187,14 @@ const uint16_t PROGMEM {sym}MenuMelody[] = {{
   {melody_values},
 }};
 
+const uint16_t PROGMEM {sym}MeowTone[] = {{
+  {meow_values}
+}};
+
 struct PersonalityProfile {{
   const char *name;
   const uint16_t *menuMelody;
+  const uint16_t *meowTone;
   uint8_t menuMelodyLength;
   uint8_t playfulness;
   uint8_t anxiety;
@@ -181,12 +208,12 @@ struct PersonalityProfile {{
   uint8_t feedCost;
   uint8_t fishPreference;
   uint8_t chickenPreference;
-  uint16_t meowNote;
 }};
 
 constexpr PersonalityProfile {sym}Personality = {{
   {c_string(data["name"])},
   {sym}MenuMelody,
+  {sym}MeowTone,
   {len(menu_melody)},
   {data["traits"]["playfulness"]},
   {data["traits"]["anxiety"]},
@@ -200,7 +227,6 @@ constexpr PersonalityProfile {sym}Personality = {{
   {behavior["feedCost"]},
   {behavior["fishPreference"]},
   {behavior["chickenPreference"]},
-  {note_symbol(meow_note)},
 }};
 
 constexpr const PersonalityProfile &ActivePersonality = {sym}Personality;

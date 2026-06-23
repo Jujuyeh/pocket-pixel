@@ -2629,9 +2629,6 @@ void drawVisitHostScene() {
             visitHostState.frame++;
         }
         drawRamSpriteMirrored(guestX, guestY, remoteVisit.idleSprites[remoteFrame]);
-    } else {
-        tinyfont.setCursor(72, 30);
-        tinyfont.print("...");
     }
 }
 
@@ -2665,7 +2662,6 @@ void drawVisitMenu() {
     }
 
     arduboy.fillRect(38, 14, 52, 40, WHITE);
-    arduboy.drawRect(38, 14, 52, 40, BLACK);
     tinyfont.setCursor(54, 19);
     tinyfont.print("MENU");
     drawVisitMenuOption(0, "BALL");
@@ -2951,7 +2947,7 @@ bool petCanMeow() {
 
 void startMeow() {
     meowFrames = MEOW_FRAMES;
-    sound.tone(ActivePersonality.meowNote, 70);
+    sound.tones(ActivePersonality.meowTone);
 }
 
 void updateMeow() {

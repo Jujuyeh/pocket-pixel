@@ -93,6 +93,8 @@ menu cursor sound. Each successful cursor move plays the next note and wraps at
 the end.
 
 `audio.meowNote` is an optional note name used as the pet's short meow pitch.
+The generated game sound plays that note, the next semitone up, that note again,
+and the previous semitone down.
 
 Use note strings such as `C5`, `CS5`, `D5`, or `REST` for melodies. `C#5` is
 accepted and generated as `NOTE_CS5`. Keep melodies short; the validator caps

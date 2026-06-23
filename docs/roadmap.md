@@ -32,22 +32,22 @@ cycle changes code, tooling, gameplay, save data, or Arduboy FX packaging.
 Last measured stable build:
 
 ```text
-Sketch uses 24488 bytes (85%) of program storage space.
+Sketch uses 24496 bytes (85%) of program storage space.
 Global variables use 1561 bytes (60%) of dynamic memory.
 ```
 
 Last measured debug build:
 
 ```text
-Sketch uses 25556 bytes (89%) of program storage space.
+Sketch uses 25588 bytes (89%) of program storage space.
 Global variables use 1605 bytes (62%) of dynamic memory.
 ```
 
 Last measured FX-C build:
 
 ```text
-Sketch uses 28616 bytes (99%) of program storage space.
-Global variables use 1767 bytes (69%) of dynamic memory.
+Sketch uses 28646 bytes (99%) of program storage space.
+Global variables use 1763 bytes (68%) of dynamic memory.
 ```
 
 Size tooling:
@@ -192,11 +192,11 @@ Nix follow-up notes:
 
 Space expectation after measurement:
 
-- Stable currently leaves 4,184 bytes of flash and 999 bytes of RAM.
-- Debug leaves 3,116 bytes of flash and 955 bytes of RAM.
+- Stable currently leaves 4,176 bytes of flash and 999 bytes of RAM.
+- Debug leaves 3,084 bytes of flash and 955 bytes of RAM.
 - FX-C with Ball Hunt, invite confirmation, visit-data exchange, host-side
-  remote pet drawing, visit menu, and profile-driven meows leaves 56 bytes of
-  flash and 793 bytes of RAM.
+  remote pet drawing, visit menu, and profile-driven meows leaves 26 bytes of
+  flash and 797 bytes of RAM.
 - More FX-C gameplay now requires optimization first; avoid large bitmaps and
   broad abstractions.
 - The FX-C build keeps the custom boot animation, but uses a procedural Play
