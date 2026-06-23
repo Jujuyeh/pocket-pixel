@@ -28,7 +28,10 @@ uint8_t countDigits(uint16_t value) {
 
 // Draws the small circular button prompt used by action scenes.
 void drawButtonHint(Arduboy2Base &arduboy, Tinyfont &tinyfont, uint8_t y, const char *label) {
-    arduboy.fillCircle(96, y + 1, 3, BLACK);
+    arduboy.drawFastHLine(94, y - 1, 5, BLACK);
+    arduboy.drawFastHLine(93, y, 7, BLACK);
+    arduboy.drawFastHLine(93, y + 1, 7, BLACK);
+    arduboy.drawFastHLine(94, y + 2, 5, BLACK);
     tinyfont.setCursor(102, y);
     tinyfont.print(label);
 }
@@ -84,7 +87,10 @@ void drawLifeBarAt(Arduboy2Base &arduboy, int16_t x) {
 void drawXpBar(Arduboy2Base &arduboy, Tinyfont &tinyfont, int16_t x, uint8_t width) {
     uint8_t innerWidth = width > 4 ? width - 4 : 0;
     uint8_t barFillWidth = (uint8_t) ((uint16_t) innerWidth * pet.xpTenths / 10);
-    arduboy.drawRoundRect(x, 57, width, 6, 1, BLACK);
+    arduboy.drawFastHLine(x + 1, 57, width - 2, BLACK);
+    arduboy.drawFastHLine(x + 1, 62, width - 2, BLACK);
+    arduboy.drawFastVLine(x, 58, 4, BLACK);
+    arduboy.drawFastVLine(x + width - 1, 58, 4, BLACK);
     arduboy.fillRect(x + 2, 59, barFillWidth, 2, BLACK);
 
     tinyfont.setCursor(x + 1, 52);
@@ -119,5 +125,5 @@ void drawMenu(Arduboy2Base &arduboy, int16_t x, uint8_t selectedAction) {
 
     arduboy.fillRect(x + 1, 1, 7, 62, WHITE);
     arduboy.drawFastVLine(x + 2, 29, 5, BLACK);
-    arduboy.fillCircle(x + 5, menuCursorY(selectedAction) + 3, 1, BLACK);
+    arduboy.drawPixel(x + 5, menuCursorY(selectedAction) + 3, BLACK);
 }

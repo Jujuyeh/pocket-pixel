@@ -28,6 +28,12 @@ The FX-C build also defines `CDC_DISABLED` because flashcart-launched gameplay
 does not use Serial/USB CDC at runtime. Keep that define scoped to FX-C unless a
 classic upload workflow is explicitly tested with it.
 
+FX-C also provides its own tiny `main()` in `pocket-pixel.ino`. The link cable
+uses `ArduboyI2C` over the FX-C USB-C connector pins, not the Arduino USB CDC
+runtime. Keeping the FX-C sketch out of Arduino's default USB-attaching
+`main.cpp` saves flash and RAM while preserving normal `init()`, `setup()`, and
+`loop()` execution.
+
 Startup uses `arduboy.beginDoFirst()` and `arduboy.waitNoButtons()` instead of
 `arduboy.begin()`. This preserves hardware, flashlight, system-button, and audio
 initialization while skipping the default scrolling Arduboy boot logo. A custom

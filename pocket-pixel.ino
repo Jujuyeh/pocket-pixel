@@ -7,3 +7,13 @@ void setup() {
 void loop() {
     gameLoop();
 }
+
+#ifdef POCKET_PIXEL_FXC_LINK
+int main(void) {
+    init();
+    setup();
+    for (;;) {
+        loop();
+    }
+}
+#endif

@@ -67,9 +67,12 @@ at every dimension.
 ## Space Tradeoffs
 
 The FX-C build keeps the normal stable/debug builds unchanged, but it makes one
-FX-C-only flash tradeoff:
+FX-C-only flash tradeoff and one FX-C-only runtime optimization:
 
 - draws the Play minigame background procedurally instead of keeping the large
   bitmap background in flash.
+- uses a tiny sketch-owned `main()` so the flashcart-launched game does not pull
+  in Arduino's USB CDC attach path. The FX-C link cable still works because
+  multiplayer uses `ArduboyI2C` over the USB-C connector pins, not USB CDC.
 
 This keeps the first link-cable build within the ATmega32U4 flash limit.

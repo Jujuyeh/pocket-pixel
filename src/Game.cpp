@@ -680,7 +680,14 @@ void revealCoinInBrush(uint8_t brushX, uint8_t brushY) {
 
 // Shared 8x8-ish coin glyph used by clean/feed/walk rewards.
 void drawCoin(Arduboy2Base &display, uint8_t x, uint8_t y, uint8_t color) {
-    display.drawCircle(x, y, 3, color);
+    display.drawFastHLine(x - 1, y - 3, 3, color);
+    display.drawFastHLine(x - 1, y + 3, 3, color);
+    display.drawFastVLine(x - 3, y - 1, 3, color);
+    display.drawFastVLine(x + 3, y - 1, 3, color);
+    display.drawPixel(x - 2, y - 2, color);
+    display.drawPixel(x + 2, y - 2, color);
+    display.drawPixel(x - 2, y + 2, color);
+    display.drawPixel(x + 2, y + 2, color);
     display.drawFastVLine(x, y - 2, 5, color);
     display.drawPixel(x - 1, y - 1, color);
     display.drawPixel(x + 1, y + 1, color);
@@ -2000,10 +2007,7 @@ void drawWalkObstacle(const WalkObstacle &obstacle) {
 void drawWalkCoin(const WalkObstacle &obstacle) {
     int16_t x = walkObstacleX(obstacle);
     uint8_t y = walkLaneTargetY(obstacle.lane) - WALK_COIN_H + 1;
-    arduboy.drawCircle(x + 3, y + 3, 3, BLACK);
-    arduboy.drawFastVLine(x + 3, y + 1, 5, BLACK);
-    arduboy.drawPixel(x + 5, y + 2, BLACK);
-    arduboy.drawPixel(x + 5, y + 4, BLACK);
+    drawCoin(arduboy, x + 3, y + 3, BLACK);
 }
 
 // Painter's order by bottom Y makes lower-lane objects appear in front.
@@ -2123,7 +2127,11 @@ void drawHockeyPuck() {
     if (puckY < -HOCKEY_PUCK_R || puckY > 63 + HOCKEY_PUCK_R) {
         return;
     }
-    arduboy.fillCircle(puckX, puckY, HOCKEY_PUCK_R, BLACK);
+    arduboy.drawPixel(puckX, puckY - 2, BLACK);
+    arduboy.drawFastHLine(puckX - 1, puckY - 1, 3, BLACK);
+    arduboy.drawFastHLine(puckX - 2, puckY, 5, BLACK);
+    arduboy.drawFastHLine(puckX - 1, puckY + 1, 3, BLACK);
+    arduboy.drawPixel(puckX, puckY + 2, BLACK);
 }
 
 void drawAirHockeyMinigame() {
