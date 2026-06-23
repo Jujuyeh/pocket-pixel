@@ -153,6 +153,23 @@ On the water minigame:
   The scratching penalty is applied once per scratch pulse while the idle-screen
   scratching animation is active, not in the water minigame.
 
+On FX-C linked play:
+
+- Connecting two FX-C units wakes both pets into linked idle and shows
+  `INVITE?`.
+- After confirming an invite, the guest pet leaves its console, a shuttered menu
+  appears on the guest console, and the host screen shows both pets.
+- The visit menu offers `BALL`, `WATER`, and `FOOD`. `BALL` starts Ball Hunt,
+  `WATER` starts Water Battle, and `FOOD` is protocol-reserved but still falls
+  back to Ball Hunt until Food Rush is implemented.
+- In Ball Hunt, each player controls their own pet at the bottom of their screen
+  and holds `B` to return the puck.
+- In Water Battle, each console plays the Water spray meter locally; progress is
+  shared and the first side to fill the meter wins.
+- Holding `A` for roughly three seconds exits linked minigames.
+- Linked minigames grant XP and hunger cost, then keep the invited pet on the
+  host screen and the guest console in its linked menu.
+
 On debug builds only:
 
 - A+B+Up toggles the debug menu.

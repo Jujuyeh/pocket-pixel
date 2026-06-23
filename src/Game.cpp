@@ -24,6 +24,8 @@ void closeEyes(int16_t dx = 0);
 void clearZZZ();
 uint8_t idleBreathFrames();
 void playMenuMoveTone();
+void updateWaterMinigame();
+void drawWaterMinigame();
 
 /************************************ GAME ************************************/
 
@@ -35,7 +37,8 @@ enum GAME_STATE {
   WALK,
   WATER,
   VISIT_MENU,
-  AIR_HOCKEY
+  AIR_HOCKEY,
+  WATER_BATTLE
 } state = IDLE;
 
 enum MenuAction : uint8_t {
@@ -327,6 +330,14 @@ struct AirHockeyMinigame {
     uint8_t exitHoldFrames = 0;
 };
 
+struct WaterBattleMinigame {
+    bool initialized = false;
+    bool host = true;
+    uint8_t remoteProgress = 0;
+    uint8_t winner = 0;
+    uint8_t exitHoldFrames = 0;
+};
+
 struct VisitTransfer {
     bool active = false;
     bool profileSent = false;
@@ -394,6 +405,7 @@ WaterMinigame waterGame;
 WalkMinigame walkGame;
 #ifdef POCKET_PIXEL_FXC_LINK
 AirHockeyMinigame hockeyGame;
+WaterBattleMinigame waterBattleGame;
 VisitTransfer visitTransfer;
 RemoteVisitData remoteVisit;
 VisitMenuState visitMenuState;
@@ -913,6 +925,18 @@ void resetAirHockeyMinigame() {
     hockeyGame = AirHockeyMinigame();
 }
 
+void resetWaterBattleMinigame() {
+    waterBattleGame = WaterBattleMinigame();
+}
+
+void startLinkedGame(uint8_t game) {
+    if (game == LINK_GAME_WATER_BATTLE) {
+        setState(WATER_BATTLE);
+    } else {
+        setState(AIR_HOCKEY);
+    }
+}
+
 bool linkIdleActive() {
     return state == IDLE && linkPeerAvailable();
 }
@@ -1196,7 +1220,17 @@ void initAirHockeyMinigame() {
     }
 }
 
-void finishAirHockeyMinigame() {
+void initWaterBattleMinigame() {
+    resetWaterBattleMinigame();
+    resetWaterMinigame();
+    waterBattleGame.initialized = true;
+    waterBattleGame.host = linkLocalIsHost();
+    waterGame.initialized = true;
+    waterGame.target = randomWaterTarget();
+    waterGame.targetFrames = randomWaterTargetDuration();
+}
+
+void finishLinkedMinigame() {
     addXpTenths(3);
     hurtPet(2);
     sound.tones(feedDone);
@@ -1210,6 +1244,8 @@ void finishAirHockeyMinigame() {
         setState(VISIT_MENU);
     }
 }
+
+void finishAirHockeyMinigame() { finishLinkedMinigame(); }
 
 void updateHockeyLocalInput() {
     hockeyGame.localStrike = arduboy.pressed(B_BUTTON);
@@ -1353,6 +1389,44 @@ void updateAirHockeyMinigame() {
         hockeyGame.scoreFlashFrames--;
     }
     syncHockeyState();
+}
+
+uint8_t localWaterBattleSide() {
+    return waterBattleGame.host ? 1 : 2;
+}
+
+void updateWaterBattleSync() {
+    uint8_t localSide = localWaterBattleSide();
+    if (waterGame.progress >= WATER_PROGRESS_MAX && waterBattleGame.winner == 0) {
+        waterBattleGame.winner = localSide;
+    }
+
+    if (waterBattleGame.host) {
+        LinkInput remoteInput;
+        if (linkConsumeInput(remoteInput)) {
+            waterBattleGame.remoteProgress = remoteInput.x;
+            if (remoteInput.x >= WATER_PROGRESS_MAX && waterBattleGame.winner == 0) {
+                waterBattleGame.winner = 2;
+            }
+        }
+        LinkState statePacket = {};
+        statePacket.hostX = waterGame.progress;
+        statePacket.clientX = waterBattleGame.remoteProgress;
+        statePacket.flags = waterBattleGame.winner;
+        linkSendState(statePacket);
+    } else {
+        linkSendInput(waterGame.progress, waterGame.sprayFrames > 0);
+        LinkState statePacket;
+        if (linkConsumeState(statePacket)) {
+            waterBattleGame.remoteProgress = statePacket.hostX;
+            waterBattleGame.winner = statePacket.flags;
+        }
+    }
+}
+
+void updateWaterBattleMinigame() {
+    updateWaterMinigame();
+    updateWaterBattleSync();
 }
 #endif
 
@@ -2164,6 +2238,31 @@ void drawAirHockeyMinigame() {
     bool invertFrame = hockeyGame.flashFrames > 0 && ((hockeyGame.flashFrames / FPS_SCALE) & 1) == 0;
     arduboy.invert(invertFrame);
 }
+
+void drawMiniProgressBar(uint8_t x, uint8_t y, uint8_t value) {
+    arduboy.drawRect(x, y, 31, 4, BLACK);
+    uint8_t fill = (static_cast<uint16_t>(value) * 29) / WATER_PROGRESS_MAX;
+    if (fill > 0) {
+        arduboy.drawFastHLine(x + 1, y + 1, fill, BLACK);
+        arduboy.drawFastHLine(x + 1, y + 2, fill, BLACK);
+    }
+}
+
+void drawWaterBattleMinigame() {
+    drawWaterMinigame();
+    uint8_t localProgress = waterGame.progress;
+    uint8_t remoteProgress = waterBattleGame.remoteProgress;
+    tinyfont.setCursor(2, 3);
+    tinyfont.print("YOU");
+    drawMiniProgressBar(19, 4, localProgress);
+    tinyfont.setCursor(77, 3);
+    tinyfont.print("PEER");
+    drawMiniProgressBar(99, 4, remoteProgress);
+    if (waterBattleGame.winner != 0) {
+        tinyfont.setCursor(51, 23);
+        tinyfont.print(waterBattleGame.winner == localWaterBattleSide() ? "WIN" : "LOSE");
+    }
+}
 #endif
 
 void updateFeedMinigame() {
@@ -2470,6 +2569,10 @@ void setState(GAME_STATE status) {
         resetAirHockeyMinigame();
         stopVisitHost();
     }
+    if (status == WATER_BATTLE) {
+        resetWaterBattleMinigame();
+        stopVisitHost();
+    }
 #endif
     if (state == FEED && status != FEED) {
         arduboy.invert(false);
@@ -2484,7 +2587,7 @@ void setState(GAME_STATE status) {
         arduboy.digitalWriteRGB(RGB_OFF, RGB_OFF, RGB_OFF);
     }
 #ifdef POCKET_PIXEL_FXC_LINK
-    if (state == AIR_HOCKEY && status != AIR_HOCKEY) {
+    if ((state == AIR_HOCKEY || state == WATER_BATTLE) && status != AIR_HOCKEY && status != WATER_BATTLE) {
         arduboy.invert(false);
     }
 #endif
@@ -2610,6 +2713,37 @@ void airHockey() {
     }
 
     drawAirHockeyMinigame();
+}
+
+void waterBattle() {
+    if (!linkPeerAvailable()) {
+        state = IDLE;
+        return;
+    }
+
+    if (!waterBattleGame.initialized) {
+        initWaterBattleMinigame();
+    }
+
+    if (arduboy.pressed(A_BUTTON)) {
+        if (waterBattleGame.exitHoldFrames < HOCKEY_EXIT_HOLD_FRAMES) {
+            waterBattleGame.exitHoldFrames++;
+        }
+        if (waterBattleGame.exitHoldFrames >= HOCKEY_EXIT_HOLD_FRAMES) {
+            state = IDLE;
+            return;
+        }
+    } else {
+        waterBattleGame.exitHoldFrames = 0;
+    }
+
+    updateWaterBattleMinigame();
+    if (waterBattleGame.winner != 0) {
+        finishLinkedMinigame();
+        return;
+    }
+
+    drawWaterBattleMinigame();
 }
 
 void drawVisitMenuOption(uint8_t index, const char *label) {
@@ -2774,8 +2908,9 @@ void visitMenu() {
         setState(IDLE);
         return;
     }
-    if (linkConsumeGameStart()) {
-        setState(AIR_HOCKEY);
+    uint8_t linkedGame;
+    if (linkConsumeGameStart(linkedGame)) {
+        startLinkedGame(linkedGame);
         return;
     }
     if (visitMenuState.frame >= VISIT_LEAVE_FRAMES + VISIT_PAUSE_FRAMES + VISIT_SHUTTER_FRAMES) {
@@ -2788,8 +2923,11 @@ void visitMenu() {
             playMenuMoveTone();
         }
         if (arduboy.justPressed(B_BUTTON)) {
-            linkSendGameStart();
-            setState(AIR_HOCKEY);
+            uint8_t linkedGame = visitMenuState.selected == 1 ? LINK_GAME_WATER_BATTLE
+                : visitMenuState.selected == 2 ? LINK_GAME_FOOD_RUSH
+                : LINK_GAME_BALL_HUNT;
+            linkSendGameStart(linkedGame);
+            startLinkedGame(linkedGame);
             return;
         }
     }
@@ -3348,8 +3486,9 @@ void randomEmotion() {
 
 void idle() {
 #ifdef POCKET_PIXEL_FXC_LINK
-    if (linkConsumeGameStart()) {
-        setState(AIR_HOCKEY);
+    uint8_t linkedGame;
+    if (linkConsumeGameStart(linkedGame)) {
+        startLinkedGame(linkedGame);
         return;
     }
     if (linkConsumeInvite()) {
@@ -3474,7 +3613,7 @@ void gameLoop() {
     arduboy.pollButtons();
     frameCounter++;
 #ifdef POCKET_PIXEL_FXC_LINK
-    linkUpdate(state == IDLE || state == VISIT_MENU || state == AIR_HOCKEY);
+    linkUpdate(state == IDLE || state == VISIT_MENU || state == AIR_HOCKEY || state == WATER_BATTLE);
     updateVisitTransfer();
 #endif
     if (state != CLEAN) {
@@ -3514,6 +3653,9 @@ void gameLoop() {
         break;
     case AIR_HOCKEY:
         airHockey();
+        break;
+    case WATER_BATTLE:
+        waterBattle();
         break;
 #endif
     

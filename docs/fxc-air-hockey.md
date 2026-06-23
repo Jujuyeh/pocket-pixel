@@ -1,6 +1,6 @@
-# FX-C Air Hockey
+# FX-C Linked Play
 
-Pocket Pixel includes a first Arduboy FX-C link-cable minigame behind
+Pocket Pixel includes Arduboy FX-C link-cable gameplay behind
 `POCKET_PIXEL_FXC_LINK`, compiled with:
 
 ```sh
@@ -32,7 +32,7 @@ are on the host screen, a 5-second conversation cycle runs between them: 25% of
 cycles stay silent, and the rest are evenly split between heart, chicken, fish,
 spiral, cross, or a plain `MEOW` without a topic.
 
-## Controls
+## Ball Hunt Controls
 
 - Left/right: move the pet horizontally.
 - Hold `B`: the pet lunges to return the puck.
@@ -40,7 +40,7 @@ spiral, cross, or a plain `MEOW` without a topic.
 The pet cannot move laterally while `B` is held. This keeps the interaction
 timing-based instead of letting the player sweep the full goal while attacking.
 
-## Rules
+## Ball Hunt Rules
 
 - The match is best of 7; the first side to 4 points wins.
 - Each screen draws only its own pet at the bottom edge. The puck and score are
@@ -68,6 +68,20 @@ does not need new profile schema yet:
 Future profile work should replace this with explicit balanced values, such as
 mobility, reach, and power, with a capped total budget so one pet cannot be best
 at every dimension.
+
+## Water Battle
+
+The linked visit menu can also start Water Battle. It reuses the local Water
+spray rhythm as a race:
+
+- Each console plays its own spray prompt and progress bar.
+- The link shares progress and the host decides the winner.
+- The first side to fill the meter wins.
+- Holding `A` for roughly 3 seconds exits, matching Ball Hunt's accidental-exit
+  protection.
+
+Food Rush is reserved in the link protocol and menu, but still falls back to
+Ball Hunt until there is enough flash budget to implement it properly.
 
 ## Space Tradeoffs
 

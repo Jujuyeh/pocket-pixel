@@ -59,6 +59,7 @@ LinkInput latestInput = {};
 LinkState latestState = {};
 LinkVisitProfile latestVisitProfile = {};
 LinkSpriteChunk latestSpriteChunk = {};
+uint8_t latestGameStart = LINK_GAME_BALL_HUNT;
 
 #if I2C_LIB_VER >= 30000
 void onReceive(const uint8_t *buffer, uint8_t size);
@@ -198,6 +199,7 @@ void processReceived() {
     if (packet.kind == LINK_KIND_INVITE) {
         pendingInvite = true;
     } else if (packet.kind == LINK_KIND_GAME_START) {
+        latestGameStart = packet.a;
         pendingGameStart = true;
     } else if (packet.kind == LINK_KIND_INPUT) {
         latestInput.x = packet.a;
@@ -284,17 +286,19 @@ void linkSendInvite() {
     sendPacket(packet);
 }
 
-bool linkConsumeGameStart() {
+bool linkConsumeGameStart(uint8_t &game) {
     if (!pendingGameStart) {
         return false;
     }
+    game = latestGameStart;
     pendingGameStart = false;
     return true;
 }
 
-void linkSendGameStart() {
+void linkSendGameStart(uint8_t game) {
     LinkPacket packet = {};
     packet.kind = LINK_KIND_GAME_START;
+    packet.a = game;
     sendPacket(packet);
 }
 
@@ -387,8 +391,8 @@ bool linkPeerAvailable() { return false; }
 bool linkLocalIsHost() { return true; }
 bool linkConsumeInvite() { return false; }
 void linkSendInvite() {}
-bool linkConsumeGameStart() { return false; }
-void linkSendGameStart() {}
+bool linkConsumeGameStart(uint8_t &) { return false; }
+void linkSendGameStart(uint8_t) {}
 void linkSendInput(uint8_t, bool) {}
 bool linkConsumeInput(LinkInput &) { return false; }
 void linkSendState(const LinkState &) {}

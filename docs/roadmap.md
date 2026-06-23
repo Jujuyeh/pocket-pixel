@@ -32,22 +32,22 @@ cycle changes code, tooling, gameplay, save data, or Arduboy FX packaging.
 Last measured stable build:
 
 ```text
-Sketch uses 24496 bytes (85%) of program storage space.
+Sketch uses 24022 bytes (83%) of program storage space.
 Global variables use 1561 bytes (60%) of dynamic memory.
 ```
 
 Last measured debug build:
 
 ```text
-Sketch uses 25588 bytes (89%) of program storage space.
+Sketch uses 24700 bytes (86%) of program storage space.
 Global variables use 1605 bytes (62%) of dynamic memory.
 ```
 
 Last measured FX-C build:
 
 ```text
-Sketch uses 28646 bytes (99%) of program storage space.
-Global variables use 1763 bytes (68%) of dynamic memory.
+Sketch uses 27750 bytes (96%) of program storage space.
+Global variables use 1767 bytes (69%) of dynamic memory.
 ```
 
 Size tooling:
@@ -159,10 +159,10 @@ For each meaningful development cycle:
 - [x] Hardware-tested Walk and accepted the current behavior.
 - [x] Added a GitHub Pages web player and release pipeline for public builds.
 
-## Current Cycle: FX-C Target And Release Packaging
+## Current Cycle: FX-C Linked Play
 
-Goal: make Pocket Pixel ready for Arduboy FX-C testing and cleaner public
-release artifacts before implementing any link-cable gameplay.
+Goal: grow the FX-C visit flow into a small linked-play layer while keeping the
+normal Arduboy/FX builds unchanged.
 
 1. [x] Add `BUILD=fxc`, `make compile-fxc`, and `make size-fxc`.
 2. [x] Add `make fx-entry-fxc` under `dist/fx-cart/FX-C/...` so FX-C catalog
@@ -175,9 +175,19 @@ release artifacts before implementing any link-cable gameplay.
    remains for one more minigame or a first multiplayer slice.
 7. [x] Design and implement the first Pocket Pixel link protocol slice for Air
    Hockey.
-8. [ ] Hardware-test Air Hockey on two FX-C units: linked idle wake, invite flow,
+8. [x] Add linked pet visit data exchange, guest arrival, linked menu, and
+   conversation topics.
+9. [x] Add linked game selection so the visit menu can request different
+   minigames over the cable.
+10. [x] Add Water Battle as a lightweight linked race using the Water spray
+   meter.
+11. [ ] Hardware-test Air Hockey on two FX-C units: linked idle wake, invite flow,
    host/client orientation, puck crossing, score sync, and disconnect behavior.
-9. [ ] Add graceful link-loss recovery during an active linked session: fade to
+12. [ ] Hardware-test Water Battle on two FX-C units: menu routing, winner sync,
+   hold-to-exit, and return-to-visit behavior.
+13. [ ] Implement Food Rush once there is enough flash budget for the dropper
+   and bowl roles.
+14. [ ] Add graceful link-loss recovery during an active linked session: fade to
    white and restart the game state without replaying the boot sequence.
 
 Nix follow-up notes:
@@ -192,12 +202,12 @@ Nix follow-up notes:
 
 Space expectation after measurement:
 
-- Stable currently leaves 4,176 bytes of flash and 999 bytes of RAM.
-- Debug leaves 3,084 bytes of flash and 955 bytes of RAM.
-- FX-C with Ball Hunt, invite confirmation, visit-data exchange, host-side
-  remote pet drawing, visit menu, and profile-driven meows leaves 26 bytes of
-  flash and 797 bytes of RAM.
-- More FX-C gameplay now requires optimization first; avoid large bitmaps and
+- Stable currently leaves 4,650 bytes of flash and 999 bytes of RAM.
+- Debug leaves 3,972 bytes of flash and 955 bytes of RAM.
+- FX-C with Ball Hunt, Water Battle, invite confirmation, visit-data exchange,
+  host-side remote pet drawing, visit menu, conversations, and profile-driven
+  meows leaves 922 bytes of flash and 793 bytes of RAM.
+- More FX-C gameplay now requires careful budgeting; avoid large bitmaps and
   broad abstractions.
 - The FX-C build keeps the custom boot animation, but uses a procedural Play
   background to reserve enough flash for ArduboyI2C and Air Hockey.
