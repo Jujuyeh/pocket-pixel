@@ -40,7 +40,7 @@ WEB_SITE_SCRIPT ?= $(SKETCH_DIR)/tools/prepare-web-site.sh
 ifeq ($(BUILD),debug)
 ARDUINO_BUILD_FLAGS := --build-property compiler.cpp.extra_flags="-DPOCKET_PIXEL_DEBUG=1 -mcall-prologues -fno-inline-small-functions" --build-property compiler.c.extra_flags="-mcall-prologues -fno-inline-small-functions" --build-property compiler.c.elf.extra_flags="-Wl,--relax"
 else ifeq ($(BUILD),fxc)
-ARDUINO_BUILD_FLAGS := --build-property compiler.cpp.extra_flags="-DPOCKET_PIXEL_FXC_LINK=1 -mcall-prologues -fno-inline-small-functions" --build-property compiler.c.extra_flags="-mcall-prologues -fno-inline-small-functions" --build-property compiler.c.elf.extra_flags="-Wl,--relax"
+ARDUINO_BUILD_FLAGS := --build-property compiler.cpp.extra_flags="-DPOCKET_PIXEL_FXC_LINK=1 -DCDC_DISABLED -mcall-prologues -fno-inline-small-functions" --build-property compiler.c.extra_flags="-DCDC_DISABLED -mcall-prologues -fno-inline-small-functions" --build-property compiler.c.elf.extra_flags="-Wl,--relax"
 else ifeq ($(BUILD),stable)
 ARDUINO_BUILD_FLAGS := $(ARDUINO_SIZE_FLAGS)
 else

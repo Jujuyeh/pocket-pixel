@@ -46,8 +46,8 @@ Global variables use 1598 bytes (62%) of dynamic memory.
 Last measured FX-C build:
 
 ```text
-Sketch uses 28404 bytes (99%) of program storage space.
-Global variables use 1848 bytes (72%) of dynamic memory.
+Sketch uses 27664 bytes (96%) of program storage space.
+Global variables use 1586 bytes (61%) of dynamic memory.
 ```
 
 Size tooling:
@@ -192,12 +192,15 @@ Space expectation after measurement:
 
 - Stable currently leaves 4,404 bytes of flash and 1,004 bytes of RAM.
 - Debug leaves 3,268 bytes of flash and 962 bytes of RAM.
-- FX-C with Air Hockey, invite confirmation, and visit-data exchange leaves
-  268 bytes of flash and 712 bytes of RAM.
+- FX-C with Ball Hunt, invite confirmation, visit-data exchange, and the visit
+  menu leaves 1,008 bytes of flash and 974 bytes of RAM.
 - More FX-C gameplay now requires optimization first; avoid large bitmaps and
   broad abstractions.
 - The FX-C build keeps the custom boot animation, but uses a procedural Play
   background to reserve enough flash for ArduboyI2C and Air Hockey.
+- The FX-C build disables USB CDC inside the sketch with `CDC_DISABLED`. The
+  game is launched from the flashcart and does not use Serial at runtime; this
+  recovers enough flash/RAM for the visit layer.
 
 Verification:
 

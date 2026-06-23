@@ -240,8 +240,11 @@ and `A` cancels.
 
 Invites now start a compact visit-data exchange. Each console sends a small
 personality packet plus the two 26x24 idle frames in 5-byte sprite chunks. This
-protocol is the foundation for the upcoming two-pet visit scene; the current
-playable linked game still enters Ball Hunt/Air Hockey after the invite.
+protocol is the foundation for the upcoming two-pet visit scene. After accepting
+an invite, the local pet walks down offscreen, a shutter closes, and a small
+`MENU` panel appears. The menu currently shows `BALL`, `WATER`, and `FOOD`;
+all three entries launch Ball Hunt until Water Battle and Food Rush are
+implemented.
 
 Controls:
 
@@ -250,7 +253,7 @@ Controls:
 - The pet cannot move while lunging.
 - Hold `A` for 3 seconds to exit early.
 
-The match is first to 4 points. Each console draws only its own pet; the puck
+Ball Hunt is first to 4 points. Each console draws only its own pet; the puck
 and score are shared across the two screens. The host console owns puck physics
 and score; the peer sends input and receives authoritative puck/score state. A
 completed match grants XP and makes the pet hungrier.

@@ -23,6 +23,7 @@ void updateScratchSirenLed();
 void closeEyes(int16_t dx = 0);
 void clearZZZ();
 uint8_t idleBreathFrames();
+void playMenuMoveTone();
 
 /************************************ GAME ************************************/
 
@@ -33,6 +34,7 @@ enum GAME_STATE {
   CLEAN,
   WALK,
   WATER,
+  VISIT_MENU,
   AIR_HOCKEY
 } state = IDLE;
 
@@ -166,7 +168,7 @@ constexpr uint8_t HOCKEY_MAX_SPEED_Y = 34;
 constexpr uint8_t HOCKEY_PADDLE_Y_HOST = 114;
 constexpr uint8_t HOCKEY_PADDLE_Y_CLIENT = 13;
 constexpr uint8_t VISIT_IDLE_SPRITE_SIZE = 2 + PET_IDLE_WIDTH * 3;
-constexpr uint8_t VISIT_IDLE_SPRITE_CHUNKS = (VISIT_IDLE_SPRITE_SIZE + LINK_SPRITE_CHUNK_BYTES - 1) / LINK_SPRITE_CHUNK_BYTES;
+constexpr uint8_t VISIT_LEAVE_FRAMES = framesAtGameFps(10);
 #endif
 constexpr uint8_t BOOT_LOGO_X = 52;
 constexpr uint8_t BOOT_LOGO_Y = 26;
@@ -315,8 +317,12 @@ struct VisitTransfer {
 
 struct RemoteVisitData {
     LinkVisitProfile profile = {};
-    uint16_t receivedChunks[2] = {};
     uint8_t idleSprites[2][VISIT_IDLE_SPRITE_SIZE] = {};
+};
+
+struct VisitMenuState {
+    uint8_t frame = 0;
+    uint8_t selected = 0;
 };
 #endif
 
@@ -363,6 +369,7 @@ WalkMinigame walkGame;
 AirHockeyMinigame hockeyGame;
 VisitTransfer visitTransfer;
 RemoteVisitData remoteVisit;
+VisitMenuState visitMenuState;
 #endif
 
 struct ToolOverlay {
@@ -893,6 +900,11 @@ void startVisitTransfer() {
     visitTransfer.active = true;
 }
 
+void startVisitMenu() {
+    visitMenuState = VisitMenuState();
+    setState(VISIT_MENU);
+}
+
 void updateVisitTransfer() {
     LinkVisitProfile profile;
     if (linkConsumeVisitProfile(profile)) {
@@ -902,12 +914,10 @@ void updateVisitTransfer() {
     LinkSpriteChunk receivedChunk;
     if (linkConsumeSpriteChunk(receivedChunk)
         && receivedChunk.sprite <= LINK_VISIT_SPRITE_IDLE2
-        && receivedChunk.chunk < VISIT_IDLE_SPRITE_CHUNKS) {
-        uint16_t offset = static_cast<uint16_t>(receivedChunk.chunk) * LINK_SPRITE_CHUNK_BYTES;
+        && receivedChunk.chunk <= VISIT_IDLE_SPRITE_SIZE - LINK_SPRITE_CHUNK_BYTES) {
         for (uint8_t i = 0; i < LINK_SPRITE_CHUNK_BYTES; i++) {
-            remoteVisit.idleSprites[receivedChunk.sprite][offset + i] = receivedChunk.data[i];
+            remoteVisit.idleSprites[receivedChunk.sprite][receivedChunk.chunk + i] = receivedChunk.data[i];
         }
-        remoteVisit.receivedChunks[receivedChunk.sprite] |= 1U << receivedChunk.chunk;
     }
 
     if (!visitTransfer.active || !linkPeerAvailable()) {
@@ -929,17 +939,16 @@ void updateVisitTransfer() {
     LinkSpriteChunk chunk = {};
     chunk.sprite = visitTransfer.sprite;
     chunk.chunk = visitTransfer.chunk;
-    uint16_t offset = static_cast<uint16_t>(chunk.chunk) * LINK_SPRITE_CHUNK_BYTES;
     const uint8_t *spriteData = visitSpriteData(chunk.sprite);
     for (uint8_t i = 0; i < LINK_SPRITE_CHUNK_BYTES; i++) {
-        chunk.data[i] = pgm_read_byte(spriteData + offset + i);
+        chunk.data[i] = pgm_read_byte(spriteData + chunk.chunk + i);
     }
     if (!linkSendSpriteChunk(chunk)) {
         return;
     }
 
-    visitTransfer.chunk++;
-    if (visitTransfer.chunk >= VISIT_IDLE_SPRITE_CHUNKS) {
+    visitTransfer.chunk += LINK_SPRITE_CHUNK_BYTES;
+    if (visitTransfer.chunk >= VISIT_IDLE_SPRITE_SIZE) {
         visitTransfer.chunk = 0;
         visitTransfer.sprite++;
     }
@@ -2547,6 +2556,64 @@ void airHockey() {
 
     drawAirHockeyMinigame();
 }
+
+void drawVisitMenuOption(uint8_t index, const char *label) {
+    tinyfont.setCursor(48, 29 + index * 8);
+    tinyfont.print(visitMenuState.selected == index ? ">" : " ");
+    tinyfont.print(label);
+}
+
+void drawVisitMenu() {
+    if (visitMenuState.frame < VISIT_LEAVE_FRAMES) {
+        uint8_t y = PET_IDLE_DRAW_Y + visitMenuState.frame * 2;
+        Sprites::drawOverwrite(PET_IDLE_DRAW_X, y, (visitMenuState.frame / 4) & 1 ? PET_IDLE1 : PET_IDLE2, 0);
+        visitMenuState.frame++;
+        return;
+    }
+
+    uint8_t h = (visitMenuState.frame - VISIT_LEAVE_FRAMES) * 2;
+    if (h > 32) {
+        h = 32;
+    } else {
+        visitMenuState.frame++;
+    }
+    arduboy.fillRect(0, 0, 128, h, BLACK);
+    arduboy.fillRect(0, 64 - h, 128, h, BLACK);
+
+    arduboy.fillRect(38, 14, 52, 40, WHITE);
+    tinyfont.setCursor(54, 19);
+    tinyfont.print("MENU");
+    drawVisitMenuOption(0, "BALL");
+    drawVisitMenuOption(1, "WATER");
+    drawVisitMenuOption(2, "FOOD");
+}
+
+void visitMenu() {
+    if (!linkPeerAvailable()) {
+        setState(IDLE);
+        return;
+    }
+    if (linkConsumeInvite()) {
+        setState(AIR_HOCKEY);
+        return;
+    }
+    if (visitMenuState.frame >= VISIT_LEAVE_FRAMES + 16) {
+        if (arduboy.justPressed(UP_BUTTON) && visitMenuState.selected > 0) {
+            visitMenuState.selected--;
+            playMenuMoveTone();
+        }
+        if (arduboy.justPressed(DOWN_BUTTON) && visitMenuState.selected < 2) {
+            visitMenuState.selected++;
+            playMenuMoveTone();
+        }
+        if (arduboy.justPressed(B_BUTTON)) {
+            linkSendInvite();
+            setState(AIR_HOCKEY);
+            return;
+        }
+    }
+    drawVisitMenu();
+}
 #endif
 
 void clean() {
@@ -2719,7 +2786,7 @@ bool handleLinkInviteConfirm() {
         if (accepted) {
             startVisitTransfer();
             linkSendInvite();
-            setState(AIR_HOCKEY);
+            startVisitMenu();
         }
         return true;
     }
@@ -3062,7 +3129,7 @@ void idle() {
         closeLinkInviteConfirm();
         startVisitTransfer();
         prepareLinkedIdle();
-        setState(AIR_HOCKEY);
+        startVisitMenu();
         return;
     }
     prepareLinkedIdle();
@@ -3165,7 +3232,7 @@ void gameLoop() {
     arduboy.pollButtons();
     frameCounter++;
 #ifdef POCKET_PIXEL_FXC_LINK
-    linkUpdate(state == IDLE || state == AIR_HOCKEY);
+    linkUpdate(state == IDLE || state == VISIT_MENU || state == AIR_HOCKEY);
     updateVisitTransfer();
 #endif
     if (state != CLEAN) {
@@ -3200,6 +3267,9 @@ void gameLoop() {
         water();
         break;
 #ifdef POCKET_PIXEL_FXC_LINK
+    case VISIT_MENU:
+        visitMenu();
+        break;
     case AIR_HOCKEY:
         airHockey();
         break;

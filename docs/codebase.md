@@ -24,6 +24,10 @@ Release, debug, and FX-C builds are compiled with AVR size-oriented flags:
 trade a small amount of call overhead for enough flash headroom to keep the FX-C
 link build viable.
 
+The FX-C build also defines `CDC_DISABLED` because flashcart-launched gameplay
+does not use Serial/USB CDC at runtime. Keep that define scoped to FX-C unless a
+classic upload workflow is explicitly tested with it.
+
 Startup uses `arduboy.beginDoFirst()` and `arduboy.waitNoButtons()` instead of
 `arduboy.begin()`. This preserves hardware, flashlight, system-button, and audio
 initialization while skipping the default scrolling Arduboy boot logo. A custom
@@ -239,8 +243,11 @@ message kinds cover:
 - visit sprite chunks.
 
 Visit sprite transfer uses 5-byte chunks. The current visit payload is the two
-active 26x24 idle frames, transferred in 16 chunks each, plus a compact
-personality packet carrying idle breath timing and food/play preferences.
+active 26x24 idle frames, transferred as byte-offset chunks, plus a compact
+personality packet carrying idle breath timing and food/play preferences. The
+first visit UI is `VISIT_MENU`: the local pet exits downward, a shutter closes,
+and a small menu lists Ball Hunt plus placeholders for Water Battle and Food
+Rush.
 
 ## Profiles
 
