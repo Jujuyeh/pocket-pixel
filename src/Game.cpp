@@ -1179,9 +1179,14 @@ void finishAirHockeyMinigame() {
     hurtPet(2);
     sound.tones(feedDone);
     saveGame();
-    resetAirHockeyMinigame();
-    arduboy.invert(false);
-    setState(IDLE);
+    if (hockeyGame.host) {
+        visitHostState.active = true;
+        visitHostState.frame = VISIT_LEAVE_FRAMES;
+        setState(IDLE);
+    } else {
+        visitMenuState.frame = VISIT_LEAVE_FRAMES + VISIT_PAUSE_FRAMES;
+        setState(VISIT_MENU);
+    }
 }
 
 void updateHockeyLocalInput() {
@@ -2555,9 +2560,7 @@ void play() {
 #ifdef POCKET_PIXEL_FXC_LINK
 void airHockey() {
     if (!linkPeerAvailable()) {
-        resetAirHockeyMinigame();
-        arduboy.invert(false);
-        setState(IDLE);
+        state = IDLE;
         return;
     }
 
@@ -2570,9 +2573,7 @@ void airHockey() {
             hockeyGame.exitHoldFrames++;
         }
         if (hockeyGame.exitHoldFrames >= HOCKEY_EXIT_HOLD_FRAMES) {
-            resetAirHockeyMinigame();
-            arduboy.invert(false);
-            setState(IDLE);
+            state = IDLE;
             return;
         }
     } else {
